@@ -330,7 +330,308 @@ suite('latex', function () {
       });
     });
 
-    suite('.selection()', function () {
+    suite('setting .selection()', function () {
+      test('cursor only', function () {
+        mq.latex(
+          '\\sqrt{2}+1+\\frac{1}{\\sqrt{2}}+\\sqrt{\\sqrt{\\sqrt{\\frac{1}{2+2}}}}'
+        );
+        mq.clearSelection();
+        mq.keystroke('Ctrl-Home');
+
+        function assertSelectionCanBeSet(key) {
+          if (key) {
+            mq.keystroke(key);
+          }
+
+          const original = mq.selection();
+          mq.clearSelection();
+          mq.selection(original);
+          const restored = mq.selection();
+
+          assert.equal(
+            JSON.stringify(restored, null, 2),
+            JSON.stringify(original, null, 2)
+          );
+        }
+
+        // run from left to right asserting that we can reset the cursor position in every position
+        assertSelectionCanBeSet();
+        for (let i = 0; i < 26; i++) {
+          assertSelectionCanBeSet('Right');
+        }
+
+        const selectionAfterLoop = mq.selection();
+        assertSelectionCanBeSet('Right');
+        const selectionAfterFirstRight = mq.selection();
+        assert.equal(
+          selectionAfterLoop.endIndex + 1,
+          selectionAfterFirstRight.endIndex,
+          'this right arrow does move selection after the loop'
+        );
+
+        assertSelectionCanBeSet('Right');
+        const selectionAftersecondRight = mq.selection();
+        assert.equal(
+          selectionAfterFirstRight.endIndex,
+          selectionAftersecondRight.endIndex,
+          'we have reached the end'
+        );
+      });
+      test('does not update selection if latex does not match', function () {
+        const startingLatex = 'abcdefghi';
+        mq.latex(startingLatex);
+        mq.keystroke('Ctrl-Home');
+        mq.keystroke('Right');
+        mq.keystroke('Shift-Right');
+        mq.keystroke('Shift-Right');
+        const originalSelection = mq.selection();
+
+        mq.keystroke('Backspace');
+        const selectionAfterBackspace = mq.selection();
+
+        mq.selection(originalSelection);
+        const failedRestoredSelection = mq.selection();
+
+        mq.latex(startingLatex);
+        mq.selection(originalSelection);
+        const successfulRestoredSelection = mq.selection();
+
+        assert.ok(
+          JSON.stringify(originalSelection, null, 2) !==
+            JSON.stringify(selectionAfterBackspace, null, 2),
+          'selection changed after backspace'
+        );
+
+        assert.equal(
+          JSON.stringify(selectionAfterBackspace, null, 2),
+          JSON.stringify(failedRestoredSelection, null, 2),
+          'selection not mutated if latex has changed'
+        );
+
+        assert.equal(
+          JSON.stringify(originalSelection, null, 2),
+          JSON.stringify(successfulRestoredSelection, null, 2),
+          'can restore selection succesfully if latex matches'
+        );
+      });
+      test('empty latex still has a selection', function () {
+        mq.latex('');
+
+        const emptySelection = mq.selection();
+        assert.equal(
+          emptySelection.opaqueSnapshot.cursorInsertPath,
+          'D',
+          'empty latex selection has "D" path'
+        );
+        assert.equal(
+          emptySelection.opaqueSnapshot.selectionLength,
+          0,
+          'empty latex selection has 0 length'
+        );
+
+        mq.latex('abc');
+        const abcSelection = mq.selection();
+
+        mq.selection(emptySelection);
+        const failedRestoredSelection = mq.selection();
+
+        assert.equal(
+          JSON.stringify(abcSelection, null, 2),
+          JSON.stringify(failedRestoredSelection, null, 2),
+          'restoring selection failed'
+        );
+
+        mq.latex('');
+        mq.selection(emptySelection);
+        const successfulRestoredSelection = mq.selection();
+        assert.equal(
+          JSON.stringify(emptySelection, null, 2),
+          JSON.stringify(successfulRestoredSelection, null, 2),
+          'restoring selection failed'
+        );
+      });
+      test('restores anchor and head', function () {
+        mq.latex('abc');
+
+        mq.keystroke('Shift-Left');
+        mq.keystroke('Shift-Left');
+        mq.keystroke('Shift-Left');
+        const rightToLeftSelection = mq.selection();
+        assert.equal(
+          rightToLeftSelection.opaqueSnapshot.selectionLength,
+          -3,
+          'right to left has negative selectionLength'
+        );
+
+        mq.keystroke('Ctrl-Home');
+        mq.keystroke('Shift-Right');
+        mq.keystroke('Shift-Right');
+        mq.keystroke('Shift-Right');
+        const leftToRightSelection = mq.selection();
+        assert.equal(
+          leftToRightSelection.opaqueSnapshot.selectionLength,
+          3,
+          'left to right has positive selectionLength'
+        );
+
+        mq.selection(rightToLeftSelection);
+        mq.keystroke('Shift-Right');
+        assert.equal(
+          mq.selection().opaqueSnapshot.selectionLength,
+          -2,
+          'Shift-Right moves head to right'
+        );
+        mq.keystroke('Shift-Left');
+        assert.equal(
+          mq.selection().opaqueSnapshot.selectionLength,
+          -3,
+          'Shift-Left moves head to left'
+        );
+        mq.keystroke('Shift-Left');
+        assert.equal(
+          mq.selection().opaqueSnapshot.selectionLength,
+          -3,
+          'Shift-Left now does nothing'
+        );
+        mq.keystroke('Shift-Right');
+        assert.equal(
+          mq.selection().opaqueSnapshot.selectionLength,
+          -2,
+          'Shift-Right moves head to right'
+        );
+
+        mq.selection(leftToRightSelection);
+        mq.keystroke('Shift-Right');
+        assert.equal(
+          mq.selection().opaqueSnapshot.selectionLength,
+          3,
+          'Shift-Right does nothing'
+        );
+        mq.keystroke('Shift-Left');
+        assert.equal(
+          mq.selection().opaqueSnapshot.selectionLength,
+          2,
+          'Shift-Left moves head to left'
+        );
+        mq.keystroke('Shift-Left');
+        assert.equal(
+          mq.selection().opaqueSnapshot.selectionLength,
+          1,
+          'Shift-Left moves head again to left'
+        );
+        mq.keystroke('Shift-Right');
+        assert.equal(
+          mq.selection().opaqueSnapshot.selectionLength,
+          2,
+          'Shift-Right moves head to right'
+        );
+      });
+      test('entire selection works', function () {
+        mq.latex('abc');
+        mq.select();
+
+        const entireSelection = mq.selection();
+        assert.equal(
+          entireSelection.opaqueSnapshot.cursorInsertPath,
+          'RRRD',
+          'entire selection has "D" as insert path'
+        );
+        assert.equal(
+          entireSelection.opaqueSnapshot.selectionLength,
+          -3,
+          'entire selection has selection length of -3'
+        );
+
+        mq.clearSelection();
+        const clearedSelection = mq.selection();
+        assert.equal(
+          clearedSelection.opaqueSnapshot.selectionLength,
+          0,
+          'cleared selection has selectionLength of 0'
+        );
+
+        mq.selection(entireSelection);
+        const restoredSelection = mq.selection();
+        assert.equal(
+          JSON.stringify(restoredSelection, null, 2),
+          JSON.stringify(entireSelection, null, 2),
+          'can restore entire selection'
+        );
+      });
+      test('simple selection', function () {
+        mq.latex('abcdefghi');
+
+        mq.clearSelection();
+        mq.keystroke('Ctrl-Home');
+        mq.keystroke('Shift-Right');
+        mq.keystroke('Shift-Right');
+        mq.keystroke('Shift-Right');
+        mq.keystroke('Shift-Right');
+        mq.keystroke('Shift-Right');
+
+        const originalSnapShot = mq.selection();
+        mq.clearSelection();
+        mq.selection(originalSnapShot);
+
+        const restoredSnapShot = mq.selection();
+        assert.equal(
+          JSON.stringify(restoredSnapShot, null, 2),
+          JSON.stringify(originalSnapShot, null, 2),
+          'can restore selection'
+        );
+        assert.equal(
+          restoredSnapShot.opaqueSnapshot.cursorInsertPath,
+          'D',
+          'has correct cursorInsertPath'
+        );
+        assert.equal(
+          restoredSnapShot.opaqueSnapshot.selectionLength,
+          5,
+          'has correct selectionLength'
+        );
+      });
+
+      test('complicated latex', function () {
+        mq.latex(
+          '1+\\frac{1}{\\sqrt{2}}+\\sqrt{\\sqrt{\\sqrt{\\frac{1}{2+2}}}}'
+        );
+
+        mq.clearSelection();
+        mq.keystroke('Ctrl-Home');
+        mq.keystroke('Right');
+        mq.keystroke('Shift-Right');
+        mq.keystroke('Shift-Right');
+        mq.keystroke('Shift-Right');
+        mq.keystroke('Shift-Right');
+
+        const originalSnapShot = mq.selection();
+        mq.clearSelection();
+        mq.selection(originalSnapShot);
+        const restoredSnapShot = mq.selection();
+        assert.equal(
+          JSON.stringify(restoredSnapShot, null, 2),
+          JSON.stringify(originalSnapShot, null, 2),
+          'can restore selection'
+        );
+        assert.equal(
+          restoredSnapShot.opaqueSnapshot.cursorInsertPath,
+          'RD',
+          'has correct cursorInsertPath'
+        );
+        assert.equal(
+          restoredSnapShot.opaqueSnapshot.selectionLength,
+          4,
+          'has correct selectionLength'
+        );
+      });
+    });
+
+    suite('reading .selection()', function () {
+      var mq2;
+      setup(function () {
+        mq2 = MQ.MathField($('<span></span>').appendTo('#mock')[0]);
+      });
+
       function assertSelection(str, expected, commands) {
         mq.latex(str);
         commands.split(' ').forEach((cmd) => {
@@ -370,6 +671,20 @@ suite('latex', function () {
         // if (sel.startIndex !== expectedStart) debugger;
         assert.equal(sel.startIndex, expectedStart, 'start position');
         assert.equal(sel.endIndex, expectedEnd, 'end position');
+
+        // build a separate mq, set the latex, and try to restore the selection.
+        // double check that the result from reading the selection matches what
+        // we tried setting
+        const originalSnapShot = mq.selection();
+        mq2.latex('');
+        mq2.latex(originalSnapShot.opaqueSnapshot.uncleanedLatex);
+        mq2.selection(originalSnapShot);
+        const restoredSnapShot = mq2.selection();
+        assert.equal(
+          JSON.stringify(restoredSnapShot, null, 2),
+          JSON.stringify(originalSnapShot, null, 2),
+          'can restore selection'
+        );
       }
 
       function executeCases(cases, startKeys, repeatKey) {

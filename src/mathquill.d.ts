@@ -26,7 +26,7 @@ declare namespace MathQuill {
       opaqueSnapshot: {
         uncleanedLatex: string;
         cursorInsertPath: string;
-        selectionLength: number;
+        signedSelectionSize: number;
       };
     };
 

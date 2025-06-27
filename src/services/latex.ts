@@ -11,7 +11,7 @@ type ExportedLatexSelection = {
   opaqueSnapshot: {
     uncleanedLatex: string;
     cursorInsertPath: string;
-    selectionLength: number;
+    signedSelectionSize: number;
   };
 };
 
@@ -128,17 +128,22 @@ class Controller_latex extends Controller_keystroke {
     return this;
   }
 
-  private traceFromNodeToRoot(node: MQNode | Cursor | Anticursor): string {
+  // this traces up from the node to the root by first going left as much as possible
+  // then going up one parent. Then going left as much as possible then going up on parent.
+  // It continues this pattern until it finds the root. The "path" that this algorithm
+  // constructs is from the root back down to this node. So it will output the path in
+  // reverse traversal order and will replace lefts with rights and ups with downs.
+  private findPathFromRootToNode(node: MQNode | Cursor | Anticursor): string {
     let path = '';
     do {
       while (node[L]) {
-        path += 'R';
+        path = 'R' + path;
         node = node[L];
       }
 
       if (node.parent) {
         node = node.parent;
-        path += 'D';
+        path = 'D' + path;
       } else {
         return path;
       }
@@ -150,12 +155,13 @@ class Controller_latex extends Controller_keystroke {
 
     let node: MQNode = this.root;
 
-    // we generate the path starting from the node working up to the root.
-    // So we need to work backwards when following the path. The very last
-    // instruction we encounter is not a reference to a node. It's a reference
-    // to where within the node we should insert. Either RightOf the node or
-    // at the LeftEnd of the node.
-    for (let i = path.length - 1; i >= 1; i--) {
+    // We generate the path starting from the node working up to the root.
+    // So we need to work backwards when following the path. The very last instruction
+    // we encounter does not point to a node. It points to a space where a cursor could
+    // be inserted: either just to the right of the current node ("R") or just to the
+    // left of the current node's children ("D")
+    const lastInstructionI = path.length - 1;
+    for (let i = 0; i < lastInstructionI; i++) {
       const instruction = path[i];
 
       if (instruction === 'D') {
@@ -171,11 +177,12 @@ class Controller_latex extends Controller_keystroke {
       }
     }
 
-    if (path[0] === 'D') {
+    const lastInstruction = path[lastInstructionI];
+    if (lastInstruction === 'D') {
       this.cursor.clearSelection().endSelection();
       this.cursor.insAtLeftEnd(node);
       return true;
-    } else if (path[0] === 'R') {
+    } else if (lastInstruction === 'R') {
       this.cursor.clearSelection().endSelection();
       this.cursor.insRightOf(node);
       return true;
@@ -187,7 +194,7 @@ class Controller_latex extends Controller_keystroke {
   restoreLatexSelection(data: ExportedLatexSelection) {
     const currentUncleanedLatex =
       this.exportLatexSelection().opaqueSnapshot.uncleanedLatex;
-    const { cursorInsertPath, selectionLength, uncleanedLatex } =
+    const { cursorInsertPath, signedSelectionSize, uncleanedLatex } =
       data.opaqueSnapshot;
 
     // verify the uncleanedLatex are identical. We need the trees to be identical so that the
@@ -196,10 +203,10 @@ class Controller_latex extends Controller_keystroke {
 
     if (!this.insertCursorAtPath(cursorInsertPath)) return;
 
-    if (selectionLength) {
+    if (signedSelectionSize) {
       this.withIncrementalSelection((selectDir) => {
-        const dir = selectionLength < 0 ? L : R;
-        const count = Math.abs(selectionLength);
+        const dir = signedSelectionSize < 0 ? L : R;
+        const count = Math.abs(signedSelectionSize);
         for (let i = 0; i < count; i += 1) {
           selectDir(dir);
         }
@@ -210,11 +217,11 @@ class Controller_latex extends Controller_keystroke {
   // any time there's a selection there is a cursor and anticursor. The
   // anticursor is the anchor, and the cursor is the head. It should be
   // true that these are siblings. If you trace right or left far enough
-  // you will reach the other other. This returns the direction and magnitude
+  // you will reach the other one. This returns the direction and magnitude
   // of how many hops it takes to find the cursor from the anticursor. Otherwise
   // returns 0. The idea is to try this both with L and R and use the one, if any,
   // that comes back with a non-zero answer.
-  private findSelectionLengthInDir(dir: L | R) {
+  private findSignedSelectionSizeInDir(dir: L | R) {
     const cursor = this.cursor;
     const anticursor = cursor.anticursor;
     if (!anticursor) return 0;
@@ -239,19 +246,20 @@ class Controller_latex extends Controller_keystroke {
     };
 
     let cursorInsertPath: string = '';
-    let selectionLength: number = 0;
+    let signedSelectionSize: number = 0;
 
     var selection = this.cursor.selection;
     if (selection && this.cursor.anticursor) {
-      cursorInsertPath = this.traceFromNodeToRoot(this.cursor.anticursor);
+      cursorInsertPath = this.findPathFromRootToNode(this.cursor.anticursor);
 
       ctx.startSelectionBefore = selection.getEnd(L);
       ctx.endSelectionAfter = selection.getEnd(R);
 
-      selectionLength =
-        this.findSelectionLengthInDir(L) || this.findSelectionLengthInDir(R);
+      signedSelectionSize =
+        this.findSignedSelectionSizeInDir(L) ||
+        this.findSignedSelectionSizeInDir(R);
     } else {
-      cursorInsertPath = this.traceFromNodeToRoot(this.cursor);
+      cursorInsertPath = this.findPathFromRootToNode(this.cursor);
 
       var cursorL = this.cursor[L];
       if (cursorL) {
@@ -303,7 +311,7 @@ class Controller_latex extends Controller_keystroke {
       opaqueSnapshot: {
         uncleanedLatex,
         cursorInsertPath,
-        selectionLength
+        signedSelectionSize
       }
     };
   }

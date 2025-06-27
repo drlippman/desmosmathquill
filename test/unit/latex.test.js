@@ -424,7 +424,7 @@ suite('latex', function () {
           'empty latex selection has "D" path'
         );
         assert.equal(
-          emptySelection.opaqueSnapshot.selectionLength,
+          emptySelection.opaqueSnapshot.signedSelectionSize,
           0,
           'empty latex selection has 0 length'
         );
@@ -458,9 +458,9 @@ suite('latex', function () {
         mq.keystroke('Shift-Left');
         const rightToLeftSelection = mq.selection();
         assert.equal(
-          rightToLeftSelection.opaqueSnapshot.selectionLength,
+          rightToLeftSelection.opaqueSnapshot.signedSelectionSize,
           -3,
-          'right to left has negative selectionLength'
+          'right to left has negative signedSelectionSize'
         );
 
         mq.keystroke('Ctrl-Home');
@@ -469,33 +469,33 @@ suite('latex', function () {
         mq.keystroke('Shift-Right');
         const leftToRightSelection = mq.selection();
         assert.equal(
-          leftToRightSelection.opaqueSnapshot.selectionLength,
+          leftToRightSelection.opaqueSnapshot.signedSelectionSize,
           3,
-          'left to right has positive selectionLength'
+          'left to right has positive signedSelectionSize'
         );
 
         mq.selection(rightToLeftSelection);
         mq.keystroke('Shift-Right');
         assert.equal(
-          mq.selection().opaqueSnapshot.selectionLength,
+          mq.selection().opaqueSnapshot.signedSelectionSize,
           -2,
           'Shift-Right moves head to right'
         );
         mq.keystroke('Shift-Left');
         assert.equal(
-          mq.selection().opaqueSnapshot.selectionLength,
+          mq.selection().opaqueSnapshot.signedSelectionSize,
           -3,
           'Shift-Left moves head to left'
         );
         mq.keystroke('Shift-Left');
         assert.equal(
-          mq.selection().opaqueSnapshot.selectionLength,
+          mq.selection().opaqueSnapshot.signedSelectionSize,
           -3,
           'Shift-Left now does nothing'
         );
         mq.keystroke('Shift-Right');
         assert.equal(
-          mq.selection().opaqueSnapshot.selectionLength,
+          mq.selection().opaqueSnapshot.signedSelectionSize,
           -2,
           'Shift-Right moves head to right'
         );
@@ -503,25 +503,25 @@ suite('latex', function () {
         mq.selection(leftToRightSelection);
         mq.keystroke('Shift-Right');
         assert.equal(
-          mq.selection().opaqueSnapshot.selectionLength,
+          mq.selection().opaqueSnapshot.signedSelectionSize,
           3,
           'Shift-Right does nothing'
         );
         mq.keystroke('Shift-Left');
         assert.equal(
-          mq.selection().opaqueSnapshot.selectionLength,
+          mq.selection().opaqueSnapshot.signedSelectionSize,
           2,
           'Shift-Left moves head to left'
         );
         mq.keystroke('Shift-Left');
         assert.equal(
-          mq.selection().opaqueSnapshot.selectionLength,
+          mq.selection().opaqueSnapshot.signedSelectionSize,
           1,
           'Shift-Left moves head again to left'
         );
         mq.keystroke('Shift-Right');
         assert.equal(
-          mq.selection().opaqueSnapshot.selectionLength,
+          mq.selection().opaqueSnapshot.signedSelectionSize,
           2,
           'Shift-Right moves head to right'
         );
@@ -533,11 +533,11 @@ suite('latex', function () {
         const entireSelection = mq.selection();
         assert.equal(
           entireSelection.opaqueSnapshot.cursorInsertPath,
-          'RRRD',
+          'DRRR',
           'entire selection has "D" as insert path'
         );
         assert.equal(
-          entireSelection.opaqueSnapshot.selectionLength,
+          entireSelection.opaqueSnapshot.signedSelectionSize,
           -3,
           'entire selection has selection length of -3'
         );
@@ -545,9 +545,9 @@ suite('latex', function () {
         mq.clearSelection();
         const clearedSelection = mq.selection();
         assert.equal(
-          clearedSelection.opaqueSnapshot.selectionLength,
+          clearedSelection.opaqueSnapshot.signedSelectionSize,
           0,
-          'cleared selection has selectionLength of 0'
+          'cleared selection has signedSelectionSize of 0'
         );
 
         mq.selection(entireSelection);
@@ -585,9 +585,9 @@ suite('latex', function () {
           'has correct cursorInsertPath'
         );
         assert.equal(
-          restoredSnapShot.opaqueSnapshot.selectionLength,
+          restoredSnapShot.opaqueSnapshot.signedSelectionSize,
           5,
-          'has correct selectionLength'
+          'has correct signedSelectionSize'
         );
       });
 
@@ -615,13 +615,13 @@ suite('latex', function () {
         );
         assert.equal(
           restoredSnapShot.opaqueSnapshot.cursorInsertPath,
-          'RD',
+          'DR',
           'has correct cursorInsertPath'
         );
         assert.equal(
-          restoredSnapShot.opaqueSnapshot.selectionLength,
+          restoredSnapShot.opaqueSnapshot.signedSelectionSize,
           4,
-          'has correct selectionLength'
+          'has correct signedSelectionSize'
         );
       });
     });

@@ -4,6 +4,17 @@ class TempSingleCharNode extends MQNode {
   }
 }
 
+type ExportedLatexSelection = {
+  latex: string;
+  startIndex: number;
+  endIndex: number;
+  opaqueSnapshot: {
+    uncleanedLatex: string;
+    cursorInsertPath: string;
+    signedSelectionSize: number;
+  };
+};
+
 // Parser MathBlock
 var latexMathParser = (function () {
   function commandToBlock(cmd: MQNode | Fragment): MathBlock {
@@ -116,18 +127,140 @@ class Controller_latex extends Controller_keystroke {
 
     return this;
   }
-  exportLatexSelection() {
+
+  // this traces up from the node to the root by first going left as much as possible
+  // then going up one parent. Then going left as much as possible then going up on parent.
+  // It continues this pattern until it finds the root. The "path" that this algorithm
+  // constructs is from the root back down to this node. So it will output the path in
+  // reverse traversal order and will replace lefts with rights and ups with downs.
+  private findPathFromRootToNode(node: MQNode | Cursor | Anticursor): string {
+    let path = '';
+    do {
+      while (node[L]) {
+        path = 'R' + path;
+        node = node[L];
+      }
+
+      if (node.parent) {
+        node = node.parent;
+        path = 'D' + path;
+      } else {
+        return path;
+      }
+    } while (true);
+  }
+
+  private insertCursorAtPath(path: string): boolean {
+    if (!path) return false;
+
+    let node: MQNode = this.root;
+
+    // We generate the path starting from the node working up to the root.
+    // So we need to work backwards when following the path. The very last instruction
+    // we encounter does not point to a node. It points to a space where a cursor could
+    // be inserted: either just to the right of the current node ("R") or just to the
+    // left of the current node's children ("D")
+    const lastInstructionI = path.length - 1;
+    for (let i = 0; i < lastInstructionI; i++) {
+      const instruction = path[i];
+
+      if (instruction === 'D') {
+        const end = node.children().getEnd(L);
+        if (!end) return false;
+        node = end;
+      } else if (instruction === 'R') {
+        const end = node[R];
+        if (!end) return false;
+        node = end;
+      } else {
+        return false;
+      }
+    }
+
+    const lastInstruction = path[lastInstructionI];
+    if (lastInstruction === 'D') {
+      this.cursor.clearSelection().endSelection();
+      this.cursor.insAtLeftEnd(node);
+      return true;
+    } else if (lastInstruction === 'R') {
+      this.cursor.clearSelection().endSelection();
+      this.cursor.insRightOf(node);
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  restoreLatexSelection(data: ExportedLatexSelection) {
+    const currentUncleanedLatex =
+      this.exportLatexSelection().opaqueSnapshot.uncleanedLatex;
+    const { cursorInsertPath, signedSelectionSize, uncleanedLatex } =
+      data.opaqueSnapshot;
+
+    // verify the uncleanedLatex are identical. We need the trees to be identical so that the
+    // path instructions are relative to an identical tree structure
+    if (currentUncleanedLatex !== uncleanedLatex) return;
+
+    if (!this.insertCursorAtPath(cursorInsertPath)) return;
+
+    if (signedSelectionSize) {
+      this.withIncrementalSelection((selectDir) => {
+        const dir = signedSelectionSize < 0 ? L : R;
+        const count = Math.abs(signedSelectionSize);
+        for (let i = 0; i < count; i += 1) {
+          selectDir(dir);
+        }
+      });
+    }
+  }
+
+  // any time there's a selection there is a cursor and anticursor. The
+  // anticursor is the anchor, and the cursor is the head. It should be
+  // true that these are siblings. If you trace right or left far enough
+  // you will reach the other one. This returns the direction and magnitude
+  // of how many hops it takes to find the cursor from the anticursor. Otherwise
+  // returns 0. The idea is to try this both with L and R and use the one, if any,
+  // that comes back with a non-zero answer.
+  private findSignedSelectionSizeInDir(dir: L | R) {
+    const cursor = this.cursor;
+    const anticursor = cursor.anticursor;
+    if (!anticursor) return 0;
+
+    let count = 0;
+    let node = anticursor[dir];
+    while (node !== cursor[dir]) {
+      if (!node) return 0;
+
+      count += dir;
+      node = node[dir];
+    }
+
+    return count;
+  }
+
+  exportLatexSelection(): ExportedLatexSelection {
     var ctx: LatexContext = {
       latex: '',
       startIndex: -1,
       endIndex: -1
     };
 
+    let cursorInsertPath: string = '';
+    let signedSelectionSize: number = 0;
+
     var selection = this.cursor.selection;
-    if (selection) {
+    if (selection && this.cursor.anticursor) {
+      cursorInsertPath = this.findPathFromRootToNode(this.cursor.anticursor);
+
       ctx.startSelectionBefore = selection.getEnd(L);
       ctx.endSelectionAfter = selection.getEnd(R);
+
+      signedSelectionSize =
+        this.findSignedSelectionSizeInDir(L) ||
+        this.findSignedSelectionSizeInDir(R);
     } else {
+      cursorInsertPath = this.findPathFromRootToNode(this.cursor);
+
       var cursorL = this.cursor[L];
       if (cursorL) {
         ctx.startSelectionAfter = cursorL;
@@ -146,26 +279,26 @@ class Controller_latex extends Controller_keystroke {
     this.root.latexRecursive(ctx);
 
     // need to clean the latex
-    var originalLatex = ctx.latex;
-    var cleanLatex = this.cleanLatex(originalLatex);
+    var uncleanedLatex = ctx.latex;
+    var cleanLatex = this.cleanLatex(uncleanedLatex);
     var startIndex = ctx.startIndex;
     var endIndex = ctx.endIndex;
 
     // assumes that the cleaning process will only remove characters. We
-    // run through the originalLatex and cleanLatex to find differences.
+    // run through the uncleanedLatex and cleanLatex to find differences.
     // when we find differences we see how many characters are dropped until
     // we sync back up. While detecting missing characters we decrement the
     // startIndex and endIndex if appropriate.
     var j = 0;
     for (var i = 0; i < ctx.endIndex; i++) {
-      if (originalLatex[i] !== cleanLatex[j]) {
+      if (uncleanedLatex[i] !== cleanLatex[j]) {
         if (i < ctx.startIndex) {
           startIndex -= 1;
         }
         endIndex -= 1;
 
         // do not increment j. We wan to keep looking at this same
-        // cleanLatex character until we find it in the originalLatex
+        // cleanLatex character until we find it in the uncleanedLatex
       } else {
         j += 1; //move to next cleanLatex character
       }
@@ -174,7 +307,12 @@ class Controller_latex extends Controller_keystroke {
     return {
       latex: cleanLatex,
       startIndex: startIndex,
-      endIndex: endIndex
+      endIndex: endIndex,
+      opaqueSnapshot: {
+        uncleanedLatex,
+        cursorInsertPath,
+        signedSelectionSize
+      }
     };
   }
 

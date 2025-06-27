@@ -338,7 +338,14 @@ function getInterface(v: number): MathQuill.v3.API | MathQuill.v1.API {
       return this.__controller.exportLatex();
     }
 
-    selection() {
+    selection(selection: ExportedLatexSelection): this;
+    selection(): ExportedLatexSelection;
+    selection(selection?: ExportedLatexSelection) {
+      if (selection) {
+        this.__controller.restoreLatexSelection(selection);
+        return this;
+      }
+
       return this.__controller.exportLatexSelection();
     }
     html() {

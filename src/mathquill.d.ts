@@ -19,6 +19,17 @@ declare namespace MathQuill {
       handlers?: HandlerOptions;
     };
 
+    type ExportedLatexSelection = {
+      latex: string;
+      startIndex: number;
+      endIndex: number;
+      opaqueSnapshot: {
+        uncleanedLatex: string;
+        cursorInsertPath: string;
+        signedSelectionSize: number;
+      };
+    };
+
     interface BaseMathQuill {
       id: number;
       data: { [key: string]: any };
@@ -29,12 +40,8 @@ declare namespace MathQuill {
       html: () => string;
       mathspeak: () => string;
       text(): string;
-      selection(): {
-        latex: string;
-        startIndex: number;
-        endIndex: number;
-      };
-
+      selection(selection: ExportedLatexSelection): this;
+      selection(): ExportedLatexSelection;
       //chainable methods
       config(opts: Config): this;
       latex(latex: string): this;

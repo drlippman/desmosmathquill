@@ -289,6 +289,18 @@ If a timeout (in ms) is supplied, and the math field has keyboard focus when the
 
 Returns the suffix to be appended to the [ARIA label][`aria-label`], after the math content of the field. If no ARIA post-label has been specified, `''` (empty string) is returned.
 
+## .isUserSelecting()
+
+Returns `true` if the user is currently selecting text with the mouse, `false` otherwise. This can be useful for preventing certain actions (like setting the cursor position) while the user is actively dragging to select text. The method tracks mouse selection from the moment the user presses the mouse button down to start selecting until they release it or the selection is cancelled due to an edit operation.
+
+```javascript
+if (!mathField.isUserSelecting()) {
+  // Safe to programmatically change cursor position
+  mathField.moveToLeftEnd();
+}
+```
+
+
 [`aria-label`]: https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/ARIA_Techniques/Using_the_aria-label_attribute
 
 ## .config(new_config)

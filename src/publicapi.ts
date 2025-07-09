@@ -490,6 +490,9 @@ function getInterface(v: number): MathQuill.v3.API | MathQuill.v1.API {
       this.__controller.cursor.options.ignoreNextMousedown = fn;
       return this;
     }
+    isUserSelecting() {
+      return this.__controller.isMouseSelecting;
+    }
   }
 
   var APIClasses: APIClasses = {

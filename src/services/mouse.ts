@@ -84,6 +84,7 @@ class Controller_mouse extends Controller_latex {
       ownerDocument?.removeEventListener('mousemove', onDocumentMouseMove);
       ownerDocument?.removeEventListener('mouseup', onDocumentMouseUp);
       cancelSelectionOnEdit = undefined;
+      ctrlr.isMouseSelecting = false;
     }
 
     function updateCursor() {
@@ -125,6 +126,7 @@ class Controller_mouse extends Controller_latex {
     }
 
     cursor.blink = noop;
+    ctrlr.isMouseSelecting = true;
     ctrlr
       .seek(e.target as HTMLElement | null, e.clientX, e.clientY)
       .cursor.startSelection();

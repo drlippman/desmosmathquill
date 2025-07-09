@@ -64,6 +64,7 @@ declare namespace MathQuill {
       setAriaPostLabel: (str: string, timeout?: number) => EditableMathQuill;
       ignoreNextMousedown: (func: () => boolean) => EditableMathQuill;
       clickAt: (x: number, y: number, el: HTMLElement) => EditableMathQuill;
+      isUserSelecting: () => boolean;
     }
 
     interface API {

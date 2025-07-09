@@ -26,6 +26,7 @@ class ControllerBase {
   editable: boolean | undefined;
   _ariaAlertTimeout: number;
   KIND_OF_MQ: KIND_OF_MQ;
+  isMouseSelecting: boolean = false;
 
   textarea: HTMLElement | undefined;
   private textareaEventListeners: Partial<{

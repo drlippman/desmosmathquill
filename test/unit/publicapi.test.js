@@ -253,6 +253,35 @@ suite('Public API', function () {
       assert.equal(mq.getAriaPostLabel(), '');
     });
 
+    test('.isUserSelecting()', function () {
+      mq.latex('x+y');
+
+      // Initially should not be selecting
+      assert.equal(mq.isUserSelecting(), false);
+
+      // Simulate mouse down event to start selection
+      var mouseDownEvent = new MouseEvent('mousedown', {
+        clientX: 10,
+        clientY: 10,
+        bubbles: true
+      });
+      mq.el().dispatchEvent(mouseDownEvent);
+
+      // Should be selecting during mouse down
+      assert.equal(mq.isUserSelecting(), true);
+
+      // Simulate mouse up event to end selection
+      var mouseUpEvent = new MouseEvent('mouseup', {
+        clientX: 20,
+        clientY: 10,
+        bubbles: true
+      });
+      document.dispatchEvent(mouseUpEvent);
+
+      // Should not be selecting after mouse up
+      assert.equal(mq.isUserSelecting(), false);
+    });
+
     test('.mathspeak()', function () {
       function assertMathSpeakEqual(a, b) {
         assert.equal(normalize(a), normalize(b));

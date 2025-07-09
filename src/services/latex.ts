@@ -180,11 +180,11 @@ class Controller_latex extends Controller_keystroke {
     const lastInstruction = path[lastInstructionI];
     if (lastInstruction === 'D') {
       this.cursor.clearSelection().endSelection();
-      this.cursor.insAtLeftEnd(node);
+      this.notify('move').cursor.insAtLeftEnd(node);
       return true;
     } else if (lastInstruction === 'R') {
       this.cursor.clearSelection().endSelection();
-      this.cursor.insRightOf(node);
+      this.notify('move').cursor.insRightOf(node);
       return true;
     } else {
       return false;

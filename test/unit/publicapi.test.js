@@ -282,6 +282,53 @@ suite('Public API', function () {
       assert.equal(mq.isUserSelecting(), false);
     });
 
+    test('selection restoration shows blinking cursor', function () {
+      mq.latex('a+b+c');
+      mq.focus();
+
+      assert.ok(
+        mq.el().querySelector('.mq-cursor'),
+        'cursor shows up to start'
+      );
+
+      // Create a selection covering entire content
+      mq.select();
+      var selectionSnapshot = mq.selection();
+
+      assert.ok(
+        !mq.el().querySelector('.mq-cursor'),
+        'cursor should not be in DOM during selection'
+      );
+
+      // Move to a single cursor position (no selection)
+      mq.moveToLeftEnd();
+      var caretSnapshot = mq.selection();
+
+      assert.ok(
+        mq.el().querySelector('.mq-cursor'),
+        'cursor should be in DOM at single position'
+      );
+      assert.equal(
+        caretSnapshot.startIndex,
+        caretSnapshot.endIndex,
+        'should be a caret position'
+      );
+
+      // Restore the full selection
+      mq.selection(selectionSnapshot);
+      assert.ok(
+        !mq.el().querySelector('.mq-cursor'),
+        'cursor should not be in DOM during selection'
+      );
+
+      // Now restore the single caret position - this should show the blinking cursor
+      mq.selection(caretSnapshot);
+      assert.ok(
+        mq.el().querySelector('.mq-cursor'),
+        'cursor should be in DOM and visible after restoring caret position'
+      );
+    });
+
     test('.mathspeak()', function () {
       function assertMathSpeakEqual(a, b) {
         assert.equal(normalize(a), normalize(b));

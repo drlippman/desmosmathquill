@@ -877,6 +877,8 @@ if (!CharCmds['\\']) CharCmds['\\'] = LatexCmds.backslash;
 
 LatexCmds.$ = bindVanillaSymbol('\\$', '$', 'dollar');
 
+LatexCmds['?'] = bindVanillaSymbol('?', '?', 'question');
+
 LatexCmds['□'] = LatexCmds.square = bindVanillaSymbol(
   '\\square ',
   '\u25A1',
@@ -1447,7 +1449,7 @@ LatexCmds['÷'] =
   LatexCmds.div =
   LatexCmds.divide =
   LatexCmds.divides =
-    bindBinaryOperator('\\div ', '&divide;', '[/]', 'over');
+    bindBinaryOperator('\\div ', '&divide;', '[/]', 'divided by');
 
 class Sim extends BinaryOperator {
   constructor() {

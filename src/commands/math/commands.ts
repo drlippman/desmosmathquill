@@ -884,7 +884,7 @@ var Fraction =
         var numText = getCtrlSeqsFromBlock(this.getEnd(L));
         var denText = getCtrlSeqsFromBlock(this.getEnd(R));
 
-        // Shorten mathspeak value for whole number fractions whose denominator is less than 10.
+        // Shorten mathspeak value for whole number fractions whose denominator has a special spoken form.
         if (
           (!opts || !opts.ignoreShorthand) &&
           intRgx.test(numText) &&
@@ -908,6 +908,14 @@ var Fraction =
             newDenSpeech = isSingular ? 'eighth' : 'eighths';
           } else if (denText === '9') {
             newDenSpeech = isSingular ? 'ninth' : 'ninths';
+          } else if (denText === '10') {
+            newDenSpeech = isSingular ? 'tenth' : 'tenths';
+          } else if (denText === '11') {
+            newDenSpeech = isSingular ? 'eleventh' : 'elevenths';
+          } else if (denText === '12') {
+            newDenSpeech = isSingular ? 'twelfth' : 'twelfths';
+          } else if (denText === '100') {
+            newDenSpeech = isSingular ? 'hundredth' : 'hundredths';
           }
           if (newDenSpeech !== '') {
             var output = '';

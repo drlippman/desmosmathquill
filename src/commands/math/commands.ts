@@ -434,6 +434,13 @@ class SupSub extends MathCommand {
     }
   }
   finalizeTree() {
+    if (this.supsub === 'sub') {
+      this.downInto = this.sub = this.getEnd(L);
+      this.sub.upOutOf = insLeftOfMeUnlessAtEnd;
+    } else if (this.supsub === 'sup') {
+      this.upInto = this.sup = this.getEnd(R);
+      this.sup.downOutOf = insLeftOfMeUnlessAtEnd;
+    }
     var endsL = this.getEnd(L);
     endsL.write = function (cursor: Cursor, ch: string) {
       if (
@@ -630,12 +637,6 @@ class SubscriptCommand extends SupSub {
   mathspeakTemplate = ['Subscript,', ', Baseline'];
 
   ariaLabel = 'subscript';
-
-  finalizeTree() {
-    this.downInto = this.sub = this.getEnd(L);
-    this.sub.upOutOf = insLeftOfMeUnlessAtEnd;
-    super.finalizeTree();
-  }
 }
 LatexCmds.subscript = LatexCmds._ = SubscriptCommand;
 
@@ -692,11 +693,6 @@ class SuperscriptCommand extends SupSub {
 
   ariaLabel = 'superscript';
   mathspeakTemplate = ['Superscript,', ', Baseline'];
-  finalizeTree() {
-    this.upInto = this.sup = this.getEnd(R);
-    this.sup.downOutOf = insLeftOfMeUnlessAtEnd;
-    super.finalizeTree();
-  }
 };
 
 LatexCmds.superscript =

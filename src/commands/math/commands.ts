@@ -632,8 +632,6 @@ class SubscriptCommand extends SupSub {
     ])
   );
 
-  textTemplate = ['_'];
-
   mathspeakTemplate = ['Subscript,', ', Baseline'];
 
   ariaLabel = 'subscript';
@@ -649,7 +647,6 @@ class SuperscriptCommand extends SupSub {
     ])
   );
 
-  textTemplate = ['^(', ')'];
   mathspeak(opts?: MathspeakOptions) {
     // Simplify basic exponent speech for common whole numbers.
     var child = this.upInto;

@@ -215,6 +215,12 @@ suite('Public API', function () {
       assert.equal(mq.text(), '^( )');
       mq.latex('3^{4}');
       assert.equal(mq.text(), '3^4');
+      mq.latex('x_2');
+      assert.equal(mq.text(), 'x_2');
+      mq.latex('x_2^{4}');
+      assert.equal(mq.text(), 'x_2^4');
+      mq.latex('x_{abc}^{def}');
+      assert.equal(mq.text(), 'x_(a*b*c)^(d*e*f)');
       mq.latex('3x+\\ 4');
       assert.equal(mq.text(), '3*x+ 4');
       mq.latex('x^2');

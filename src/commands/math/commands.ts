@@ -522,6 +522,27 @@ class SupSub extends MathCommand {
 
     this.checkCursorContextClose(ctx);
   }
+  mathspeak(opts?: MathspeakOptions) {
+    // Simplify basic exponent speech for common whole numbers.
+    if (this.sup !== undefined) {
+      // Calculate this item's inner text to determine whether to shorten the returned speech.
+      // Do not calculate its inner mathspeak now until we know that the speech is to be truncated.
+      // Since the mathspeak computation is recursive, we want to call it only once in this function to avoid performance bottlenecks.
+      var innerText = getCtrlSeqsFromBlock(this.sup);
+      // If the superscript is a whole number, shorten the speech that is returned.
+      if ((!opts || !opts.ignoreShorthand) && intRgx.test(innerText)) {
+        let prefix = '';
+        if (this.sub) {
+          prefix =
+            subscriptMathspeakTemplate[0] + ' ' +
+            this.sub.mathspeak() + ' ' +
+            subscriptMathspeakTemplate[1] + ' ';
+        }
+        return prefix + wholeNumberPower(this.sup, innerText);
+      }
+    }
+    return super.mathspeak();
+  }
   text() {
     function text(prefix: string, block: NodeRef | undefined) {
       var l = (block && block.text()) || '';
@@ -648,28 +669,6 @@ class SuperscriptCommand extends SupSub {
       h.block('span', { class: 'mq-sup' }, blocks[0])
     ])
   );
-
-  mathspeak(opts?: MathspeakOptions) {
-    // Simplify basic exponent speech for common whole numbers.
-    if (this.sup !== undefined) {
-      // Calculate this item's inner text to determine whether to shorten the returned speech.
-      // Do not calculate its inner mathspeak now until we know that the speech is to be truncated.
-      // Since the mathspeak computation is recursive, we want to call it only once in this function to avoid performance bottlenecks.
-      var innerText = getCtrlSeqsFromBlock(this.sup);
-      // If the superscript is a whole number, shorten the speech that is returned.
-      if ((!opts || !opts.ignoreShorthand) && intRgx.test(innerText)) {
-        let prefix = '';
-        if (this.sub) {
-          prefix =
-            subscriptMathspeakTemplate[0] + ' ' +
-            this.sub.mathspeak() + ' ' +
-            subscriptMathspeakTemplate[1] + ' ';
-        }
-        return prefix + wholeNumberPower(this.sup, innerText);
-      }
-    }
-    return super.mathspeak();
-  }
 
   ariaLabel = 'superscript';
   mathspeakTemplate = ['Superscript,', ', Baseline'];

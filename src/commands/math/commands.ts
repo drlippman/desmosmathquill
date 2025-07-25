@@ -636,48 +636,41 @@ class SupSub extends MathCommand {
       );
     }
 
-    // like 'sub sup'.split(' ').forEach(function(supsub) { ... });
-    for (var i = 0; i < 2; i += 1)
-      (function (
-        cmd: SupSub,
-        supsub: 'sup' | 'sub',
-        oppositeSupsub: 'sup' | 'sub',
-        updown: 'up' | 'down'
-      ) {
-        const cmdSubSub = cmd[supsub]!;
-        cmdSubSub.deleteOutOf = function (dir: Direction, cursor: Cursor) {
-          cursor.insDirOf(this[dir] ? (-dir as Direction) : dir, this.parent);
-          if (!this.isEmpty()) {
-            var end = this.getEnd(dir);
-            this.children()
-              .disown()
-              .withDirAdopt(
-                dir,
-                cursor.parent,
-                cursor[dir],
-                cursor[-dir as Direction]
-              )
-              .domFrag()
-              .insDirOf(-dir as Direction, cursor.domFrag());
-            cursor[-dir as Direction] = end;
-          }
-          cmd.supsub = oppositeSupsub;
-          delete cmd[supsub];
-          delete cmd[`${updown}Into`];
-          const cmdOppositeSupsub = cmd[oppositeSupsub]!;
-          cmdOppositeSupsub[`${updown}OutOf`] = insLeftOfMeUnlessAtEnd;
-          delete (cmdOppositeSupsub as any).deleteOutOf; // TODO - refactor so this method can be optional
-          if (supsub === 'sub') {
-            cmd.domFrag().addClass('mq-sup-only').children().last().remove();
-          }
-          this.remove();
-        };
-      })(
-        this,
-        'sub sup'.split(' ')[i] as 'sup' | 'sup',
-        'sup sub'.split(' ')[i] as 'sup' | 'sup',
-        'down up'.split(' ')[i] as 'up' | 'down'
-      );
+    for (let i = 0; i < 2; i += 1) {
+      const cmd: SupSub = this;
+      const supsub = (['sub', 'sup'] as const)[i];
+      const oppositeSupsub = (['sup', 'sub'] as const)[i];
+      const updown = (['down', 'up'] as const)[i];
+      const cmdSubSub = cmd[supsub]!;
+
+      cmdSubSub.deleteOutOf = function (dir: Direction, cursor: Cursor) {
+        cursor.insDirOf(this[dir] ? (-dir as Direction) : dir, this.parent);
+        if (!this.isEmpty()) {
+          const end = this.getEnd(dir);
+          this.children()
+            .disown()
+            .withDirAdopt(
+              dir,
+              cursor.parent,
+              cursor[dir],
+              cursor[-dir as Direction]
+            )
+            .domFrag()
+            .insDirOf(-dir as Direction, cursor.domFrag());
+          cursor[-dir as Direction] = end;
+        }
+        cmd.supsub = oppositeSupsub;
+        delete cmd[supsub];
+        delete cmd[`${updown}Into`];
+        const cmdOppositeSupsub = cmd[oppositeSupsub]!;
+        cmdOppositeSupsub[`${updown}OutOf`] = insLeftOfMeUnlessAtEnd;
+        delete (cmdOppositeSupsub as any).deleteOutOf; // TODO - refactor so this method can be optional
+        if (supsub === 'sub') {
+          cmd.domFrag().addClass('mq-sup-only').children().last().remove();
+        }
+        this.remove();
+      };
+    }
   }
 }
 

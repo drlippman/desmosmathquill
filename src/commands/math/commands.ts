@@ -345,21 +345,56 @@ function getCtrlSeqsFromBlock(block: NodeRef): string {
 
 Options.prototype.charsThatBreakOutOfSupSub = '';
 
+/**
+ * A SupSub node is a superscript, subscript, or both. It is possible to edit a SupSub node
+ * from being a superscript to a subscript without deleting the node by adding a subscript
+ * then deleting the superscript.
+ */
 class SupSub extends MathCommand {
-  ctrlSeq = '_{...}^{...}';
   sub?: MathBlock;
   sup?: MathBlock;
+  /**
+   * supsub is the initial orientation of the SupSub node; it provides the location to put
+   * the first block seen in parsing, either in the superscript or subscript.
+   */
   supsub: 'sup' | 'sub';
 
   protected ends: Ends<MathBlock>;
 
-  constructor() {
-    super();
+  constructor(supsub: 'sup' | 'sub') {
+    const ctrlSeq = '_{...}^{...}';
+
+    let domView;
+
+    // Note this.domView doesn't change if the SupSub is edited to something that has both
+    // superscript and subscript. This is correct, since domView is only used for the initial
+    // creation of the HTML node, not for any updates.
+    if (supsub === 'sub') {
+      domView = new DOMView(1, (blocks) =>
+        h('span', { class: 'mq-supsub mq-non-leaf' }, [
+          h.block('span', { class: 'mq-sub' }, blocks[0]),
+          h('span', { style: 'display:inline-block;width:0' }, [
+            h.text(U_ZERO_WIDTH_SPACE)
+          ])
+        ])
+      );
+    } else {
+      domView = new DOMView(1, (blocks) =>
+        h('span', { class: 'mq-supsub mq-non-leaf mq-sup-only' }, [
+          h.block('span', { class: 'mq-sup' }, blocks[0])
+        ])
+      );
+    }
+
+    super(ctrlSeq, domView);
+
     // Note the ariaLabel doesn't change if the SupSub is edited between subscript and superscript.
     // That may be a bug, though I don't know where the ariaLabel is actually used; the mathspeak
     // method doesn't reference it.
-    this.ariaLabel = this.supsub === 'sub' ? 'subscript' : 'superscript';
+    this.ariaLabel = supsub === 'sub' ? 'subscript' : 'superscript';
+    this.supsub = supsub;
   }
+
 
   setEnds(ends: Ends<MathBlock>) {
     pray(
@@ -664,27 +699,16 @@ const supMathspeakTemplate = ['Superscript,', ', Baseline'];
 const supSubMathspeakTemplate = ['Subscript,',', Baseline Superscript,', ', Baseline'];
 
 class SubscriptCommand extends SupSub {
-  supsub = 'sub' as const;
-
-  domView = new DOMView(1, (blocks) =>
-    h('span', { class: 'mq-supsub mq-non-leaf' }, [
-      h.block('span', { class: 'mq-sub' }, blocks[0]),
-      h('span', { style: 'display:inline-block;width:0' }, [
-        h.text(U_ZERO_WIDTH_SPACE)
-      ])
-    ])
-  );
+  constructor() {
+    super('sub');
+  }
 }
 LatexCmds.subscript = LatexCmds._ = SubscriptCommand;
 
 class SuperscriptCommand extends SupSub {
-  supsub = 'sup' as const;
-
-  domView = new DOMView(1, (blocks) =>
-    h('span', { class: 'mq-supsub mq-non-leaf mq-sup-only' }, [
-      h.block('span', { class: 'mq-sup' }, blocks[0])
-    ])
-  );
+  constructor() {
+    super('sup');
+  }
 };
 
 /** Assumes innerText satisfies the `intRgx` */

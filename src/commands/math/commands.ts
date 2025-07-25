@@ -651,12 +651,11 @@ class SuperscriptCommand extends SupSub {
 
   mathspeak(opts?: MathspeakOptions) {
     // Simplify basic exponent speech for common whole numbers.
-    var child = this.upInto;
-    if (child !== undefined) {
+    if (this.sup !== undefined) {
       // Calculate this item's inner text to determine whether to shorten the returned speech.
       // Do not calculate its inner mathspeak now until we know that the speech is to be truncated.
       // Since the mathspeak computation is recursive, we want to call it only once in this function to avoid performance bottlenecks.
-      var innerText = getCtrlSeqsFromBlock(child);
+      var innerText = getCtrlSeqsFromBlock(this.sup);
       // If the superscript is a whole number, shorten the speech that is returned.
       if ((!opts || !opts.ignoreShorthand) && intRgx.test(innerText)) {
         let prefix = '';
@@ -666,7 +665,7 @@ class SuperscriptCommand extends SupSub {
             this.sub.mathspeak() + ' ' +
             subscriptMathspeakTemplate[1] + ' ';
         }
-        return prefix + wholeNumberPower(child, innerText);
+        return prefix + wholeNumberPower(this.sup, innerText);
       }
     }
     return super.mathspeak();
@@ -677,7 +676,7 @@ class SuperscriptCommand extends SupSub {
 };
 
 /** Assumes innerText satisfies the `intRgx` */
-function wholeNumberPower(child: MQNode, innerText: string) {
+function wholeNumberPower(sup: MQNode, innerText: string) {
   // Simple cases
   if (innerText === '0') {
     return 'to the 0 power';
@@ -702,7 +701,7 @@ function wholeNumberPower(child: MQNode, innerText: string) {
     }
   }
   var innerMathspeak =
-    typeof child === 'object' ? child.mathspeak() : innerText;
+    typeof sup === 'object' ? sup.mathspeak() : innerText;
   return 'to the ' + innerMathspeak + suffix + ' power';
 }
 

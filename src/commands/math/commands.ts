@@ -698,18 +698,6 @@ const subMathspeakTemplate = ['Subscript,', ', Baseline'];
 const supMathspeakTemplate = ['Superscript,', ', Baseline'];
 const supSubMathspeakTemplate = ['Subscript,',', Baseline Superscript,', ', Baseline'];
 
-class SubscriptCommand extends SupSub {
-  constructor() {
-    super('sub');
-  }
-}
-LatexCmds.subscript = LatexCmds._ = SubscriptCommand;
-
-class SuperscriptCommand extends SupSub {
-  constructor() {
-    super('sup');
-  }
-};
 
 /** Assumes innerText satisfies the `intRgx` */
 function wholeNumberPower(sup: MQNode, innerText: string) {
@@ -741,10 +729,11 @@ function wholeNumberPower(sup: MQNode, innerText: string) {
   return 'to the ' + innerMathspeak + suffix + ' power';
 }
 
+LatexCmds.subscript = LatexCmds._ = () => new SupSub('sub');
+
 LatexCmds.superscript =
   LatexCmds.supscript =
-  LatexCmds['^'] = SuperscriptCommand;
-
+  LatexCmds['^'] = () => new SupSub('sup');
 
 class SummationNotation extends MathCommand {
   constructor(ch: string, symbol: string, ariaLabel?: string) {

@@ -657,32 +657,7 @@ class SuperscriptCommand extends SupSub {
       var innerText = getCtrlSeqsFromBlock(child);
       // If the superscript is a whole number, shorten the speech that is returned.
       if ((!opts || !opts.ignoreShorthand) && intRgx.test(innerText)) {
-        // Simple cases
-        if (innerText === '0') {
-          return 'to the 0 power';
-        } else if (innerText === '2') {
-          return 'squared';
-        } else if (innerText === '3') {
-          return 'cubed';
-        }
-
-        // More complex cases.
-        var suffix = '';
-        // Limit suffix addition to exponents < 1000.
-        if (/^[+-]?\d{1,3}$/.test(innerText)) {
-          if (/(11|12|13|4|5|6|7|8|9|0)$/.test(innerText)) {
-            suffix = 'th';
-          } else if (/1$/.test(innerText)) {
-            suffix = 'st';
-          } else if (/2$/.test(innerText)) {
-            suffix = 'nd';
-          } else if (/3$/.test(innerText)) {
-            suffix = 'rd';
-          }
-        }
-        var innerMathspeak =
-          typeof child === 'object' ? child.mathspeak() : innerText;
-        return 'to the ' + innerMathspeak + suffix + ' power';
+        return wholeNumberPower(child, innerText);
       }
     }
     return super.mathspeak();
@@ -691,6 +666,36 @@ class SuperscriptCommand extends SupSub {
   ariaLabel = 'superscript';
   mathspeakTemplate = ['Superscript,', ', Baseline'];
 };
+
+/** Assumes innerText satisfies the `intRgx` */
+function wholeNumberPower(child: MQNode, innerText: string) {
+  // Simple cases
+  if (innerText === '0') {
+    return 'to the 0 power';
+  } else if (innerText === '2') {
+    return 'squared';
+  } else if (innerText === '3') {
+    return 'cubed';
+  }
+
+  // More complex cases.
+  var suffix = '';
+  // Limit suffix addition to exponents < 1000.
+  if (/^[+-]?\d{1,3}$/.test(innerText)) {
+    if (/(11|12|13|4|5|6|7|8|9|0)$/.test(innerText)) {
+      suffix = 'th';
+    } else if (/1$/.test(innerText)) {
+      suffix = 'st';
+    } else if (/2$/.test(innerText)) {
+      suffix = 'nd';
+    } else if (/3$/.test(innerText)) {
+      suffix = 'rd';
+    }
+  }
+  var innerMathspeak =
+    typeof child === 'object' ? child.mathspeak() : innerText;
+  return 'to the ' + innerMathspeak + suffix + ' power';
+}
 
 LatexCmds.superscript =
   LatexCmds.supscript =

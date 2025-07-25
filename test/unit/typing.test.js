@@ -148,13 +148,13 @@ suite('typing with auto-replaces', function () {
 
   suite('MathspeakShorthand', function () {
     test('fractions', function () {
-      // Testing singular numeric fractions from 1/2 to 1/10
+      // Testing singular numeric fractions from 1/2 to 1/112, and 1/100
       mq.latex('\\frac{1}{2}');
       assertMathspeak('1 half');
       mq.latex('\\frac{1}{3}');
       assertMathspeak('1 third');
       mq.latex('\\frac{1}{4}');
-      assertMathspeak('1 quarter');
+      assertMathspeak('1 fourth');
       mq.latex('\\frac{1}{5}');
       assertMathspeak('1 fifth');
       mq.latex('\\frac{1}{6}');
@@ -166,15 +166,21 @@ suite('typing with auto-replaces', function () {
       mq.latex('\\frac{1}{9}');
       assertMathspeak('1 ninth');
       mq.latex('\\frac{1}{10}');
-      assertMathspeak('StartFraction, 1 Over 10, EndFraction');
+      assertMathspeak('1 tenth');
+      mq.latex('\\frac{1}{11}');
+      assertMathspeak('1 eleventh');
+      mq.latex('\\frac{1}{12}');
+      assertMathspeak('1 twelfth');
+      mq.latex('\\frac{1}{100}');
+      assertMathspeak('1 hundredth');
 
-      // Testing plural numeric fractions from 31/2 to 31/10
+      // Testing plural numeric fractions from 31/2 to 31/12, and 31/100
       mq.latex('\\frac{31}{2}');
       assertMathspeak('31 halves');
       mq.latex('\\frac{31}{3}');
       assertMathspeak('31 thirds');
       mq.latex('\\frac{31}{4}');
-      assertMathspeak('31 quarters');
+      assertMathspeak('31 fourths');
       mq.latex('\\frac{31}{5}');
       assertMathspeak('31 fifths');
       mq.latex('\\frac{31}{6}');
@@ -186,7 +192,13 @@ suite('typing with auto-replaces', function () {
       mq.latex('\\frac{31}{9}');
       assertMathspeak('31 ninths');
       mq.latex('\\frac{31}{10}');
-      assertMathspeak('StartFraction, 31 Over 10, EndFraction');
+      assertMathspeak('31 tenths');
+      mq.latex('\\frac{31}{11}');
+      assertMathspeak('31 elevenths');
+      mq.latex('\\frac{31}{12}');
+      assertMathspeak('31 twelfths');
+      mq.latex('\\frac{31}{100}');
+      assertMathspeak('31 hundredths');
 
       // Fractions with negative numerators should be shortened
       mq.latex('\\frac{-1}{2}');
@@ -194,7 +206,7 @@ suite('typing with auto-replaces', function () {
       mq.latex('\\frac{-3}{2}');
       assertMathspeak('negative 3 halves');
       mq.latex('-\\frac{3}{4}');
-      assertMathspeak('negative 3 quarters');
+      assertMathspeak('negative 3 fourths');
 
       // Fractions with negative denominators should not be shortened
       mq.latex('\\frac{1}{-2}');

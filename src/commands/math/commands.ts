@@ -353,6 +353,14 @@ class SupSub extends MathCommand {
 
   protected ends: Ends<MathBlock>;
 
+  constructor() {
+    super();
+    // Note the ariaLabel doesn't change if the SupSub is edited between subscript and superscript.
+    // That may be a bug, though I don't know where the ariaLabel is actually used; the mathspeak
+    // method doesn't reference it.
+    this.ariaLabel = this.supsub === 'sub' ? 'subscript' : 'superscript';
+  }
+
   setEnds(ends: Ends<MathBlock>) {
     pray(
       'SupSub ends must be MathBlocks',
@@ -666,8 +674,6 @@ class SubscriptCommand extends SupSub {
       ])
     ])
   );
-
-  ariaLabel = 'subscript';
 }
 LatexCmds.subscript = LatexCmds._ = SubscriptCommand;
 
@@ -679,8 +685,6 @@ class SuperscriptCommand extends SupSub {
       h.block('span', { class: 'mq-sup' }, blocks[0])
     ])
   );
-
-  ariaLabel = 'superscript';
 };
 
 /** Assumes innerText satisfies the `intRgx` */

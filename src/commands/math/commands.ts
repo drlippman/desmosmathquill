@@ -639,68 +639,70 @@ class SubscriptCommand extends SupSub {
 }
 LatexCmds.subscript = LatexCmds._ = SubscriptCommand;
 
-LatexCmds.superscript =
-  LatexCmds.supscript =
-  LatexCmds['^'] =
-    class SuperscriptCommand extends SupSub {
-      supsub = 'sup' as const;
+class SuperscriptCommand extends SupSub {
+  supsub = 'sup' as const;
 
-      domView = new DOMView(1, (blocks) =>
-        h('span', { class: 'mq-supsub mq-non-leaf mq-sup-only' }, [
-          h.block('span', { class: 'mq-sup' }, blocks[0])
-        ])
-      );
+  domView = new DOMView(1, (blocks) =>
+    h('span', { class: 'mq-supsub mq-non-leaf mq-sup-only' }, [
+      h.block('span', { class: 'mq-sup' }, blocks[0])
+    ])
+  );
 
-      textTemplate = ['^(', ')'];
-      mathspeak(opts?: MathspeakOptions) {
-        // Simplify basic exponent speech for common whole numbers.
-        var child = this.upInto;
-        if (child !== undefined) {
-          // Calculate this item's inner text to determine whether to shorten the returned speech.
-          // Do not calculate its inner mathspeak now until we know that the speech is to be truncated.
-          // Since the mathspeak computation is recursive, we want to call it only once in this function to avoid performance bottlenecks.
-          var innerText = getCtrlSeqsFromBlock(child);
-          // If the superscript is a whole number, shorten the speech that is returned.
-          if ((!opts || !opts.ignoreShorthand) && intRgx.test(innerText)) {
-            // Simple cases
-            if (innerText === '0') {
-              return 'to the 0 power';
-            } else if (innerText === '2') {
-              return 'squared';
-            } else if (innerText === '3') {
-              return 'cubed';
-            }
+  textTemplate = ['^(', ')'];
+  mathspeak(opts?: MathspeakOptions) {
+    // Simplify basic exponent speech for common whole numbers.
+    var child = this.upInto;
+    if (child !== undefined) {
+      // Calculate this item's inner text to determine whether to shorten the returned speech.
+      // Do not calculate its inner mathspeak now until we know that the speech is to be truncated.
+      // Since the mathspeak computation is recursive, we want to call it only once in this function to avoid performance bottlenecks.
+      var innerText = getCtrlSeqsFromBlock(child);
+      // If the superscript is a whole number, shorten the speech that is returned.
+      if ((!opts || !opts.ignoreShorthand) && intRgx.test(innerText)) {
+        // Simple cases
+        if (innerText === '0') {
+          return 'to the 0 power';
+        } else if (innerText === '2') {
+          return 'squared';
+        } else if (innerText === '3') {
+          return 'cubed';
+        }
 
-            // More complex cases.
-            var suffix = '';
-            // Limit suffix addition to exponents < 1000.
-            if (/^[+-]?\d{1,3}$/.test(innerText)) {
-              if (/(11|12|13|4|5|6|7|8|9|0)$/.test(innerText)) {
-                suffix = 'th';
-              } else if (/1$/.test(innerText)) {
-                suffix = 'st';
-              } else if (/2$/.test(innerText)) {
-                suffix = 'nd';
-              } else if (/3$/.test(innerText)) {
-                suffix = 'rd';
-              }
-            }
-            var innerMathspeak =
-              typeof child === 'object' ? child.mathspeak() : innerText;
-            return 'to the ' + innerMathspeak + suffix + ' power';
+        // More complex cases.
+        var suffix = '';
+        // Limit suffix addition to exponents < 1000.
+        if (/^[+-]?\d{1,3}$/.test(innerText)) {
+          if (/(11|12|13|4|5|6|7|8|9|0)$/.test(innerText)) {
+            suffix = 'th';
+          } else if (/1$/.test(innerText)) {
+            suffix = 'st';
+          } else if (/2$/.test(innerText)) {
+            suffix = 'nd';
+          } else if (/3$/.test(innerText)) {
+            suffix = 'rd';
           }
         }
-        return super.mathspeak();
+        var innerMathspeak =
+          typeof child === 'object' ? child.mathspeak() : innerText;
+        return 'to the ' + innerMathspeak + suffix + ' power';
       }
+    }
+    return super.mathspeak();
+  }
 
-      ariaLabel = 'superscript';
-      mathspeakTemplate = ['Superscript,', ', Baseline'];
-      finalizeTree() {
-        this.upInto = this.sup = this.getEnd(R);
-        this.sup.downOutOf = insLeftOfMeUnlessAtEnd;
-        super.finalizeTree();
-      }
-    };
+  ariaLabel = 'superscript';
+  mathspeakTemplate = ['Superscript,', ', Baseline'];
+  finalizeTree() {
+    this.upInto = this.sup = this.getEnd(R);
+    this.sup.downOutOf = insLeftOfMeUnlessAtEnd;
+    super.finalizeTree();
+  }
+};
+
+LatexCmds.superscript =
+  LatexCmds.supscript =
+  LatexCmds['^'] = SuperscriptCommand;
+
 
 class SummationNotation extends MathCommand {
   constructor(ch: string, symbol: string, ariaLabel?: string) {

@@ -431,7 +431,7 @@ suite('Public API', function () {
       mq.latex('x_1^y');
       assertMathSpeakEqual(
         mq.mathspeak(),
-        '"x" Superscript 1 Baseline "y" undefined'
+        '"x" Subscript 1 Baseline Superscript "y" Baseline'
       );
     });
   });

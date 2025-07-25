@@ -534,14 +534,24 @@ class SupSub extends MathCommand {
         let prefix = '';
         if (this.sub) {
           prefix =
-            subscriptMathspeakTemplate[0] + ' ' +
+            subMathspeakTemplate[0] + ' ' +
             this.sub.mathspeak() + ' ' +
-            subscriptMathspeakTemplate[1] + ' ';
+            subMathspeakTemplate[1] + ' ';
         }
         return prefix + wholeNumberPower(this.sup, innerText);
       }
     }
+    this.mathspeakTemplate = this.getMathspeakTemplate();
     return super.mathspeak();
+  }
+  private getMathspeakTemplate() {
+    if (this.sub && this.sup) {
+      return supSubMathspeakTemplate;
+    } else if (this.sup) {
+      return supMathspeakTemplate;
+    } else {
+      return subMathspeakTemplate
+    }
   }
   text() {
     function text(prefix: string, block: NodeRef | undefined) {
@@ -641,7 +651,9 @@ function insLeftOfMeUnlessAtEnd(this: MQNode, cursor: Cursor) {
   return undefined;
 }
 
-const subscriptMathspeakTemplate = ['Subscript,', ', Baseline'];
+const subMathspeakTemplate = ['Subscript,', ', Baseline'];
+const supMathspeakTemplate = ['Superscript,', ', Baseline'];
+const supSubMathspeakTemplate = ['Subscript,',', Baseline Superscript,', ', Baseline'];
 
 class SubscriptCommand extends SupSub {
   supsub = 'sub' as const;
@@ -654,8 +666,6 @@ class SubscriptCommand extends SupSub {
       ])
     ])
   );
-
-  mathspeakTemplate = subscriptMathspeakTemplate;
 
   ariaLabel = 'subscript';
 }
@@ -671,7 +681,6 @@ class SuperscriptCommand extends SupSub {
   );
 
   ariaLabel = 'superscript';
-  mathspeakTemplate = ['Superscript,', ', Baseline'];
 };
 
 /** Assumes innerText satisfies the `intRgx` */

@@ -154,7 +154,7 @@ suite('typing with auto-replaces', function () {
       mq.latex('\\frac{1}{3}');
       assertMathspeak('1 third');
       mq.latex('\\frac{1}{4}');
-      assertMathspeak('1 quarter');
+      assertMathspeak('1 fourth');
       mq.latex('\\frac{1}{5}');
       assertMathspeak('1 fifth');
       mq.latex('\\frac{1}{6}');
@@ -180,7 +180,7 @@ suite('typing with auto-replaces', function () {
       mq.latex('\\frac{31}{3}');
       assertMathspeak('31 thirds');
       mq.latex('\\frac{31}{4}');
-      assertMathspeak('31 quarters');
+      assertMathspeak('31 fourths');
       mq.latex('\\frac{31}{5}');
       assertMathspeak('31 fifths');
       mq.latex('\\frac{31}{6}');
@@ -206,7 +206,7 @@ suite('typing with auto-replaces', function () {
       mq.latex('\\frac{-3}{2}');
       assertMathspeak('negative 3 halves');
       mq.latex('-\\frac{3}{4}');
-      assertMathspeak('negative 3 quarters');
+      assertMathspeak('negative 3 fourths');
 
       // Fractions with negative denominators should not be shortened
       mq.latex('\\frac{1}{-2}');

@@ -897,7 +897,7 @@ var Fraction =
           } else if (denText === '3') {
             newDenSpeech = isSingular ? 'third' : 'thirds';
           } else if (denText === '4') {
-            newDenSpeech = isSingular ? 'quarter' : 'quarters';
+            newDenSpeech = isSingular ? 'fourth' : 'fourths';
           } else if (denText === '5') {
             newDenSpeech = isSingular ? 'fifth' : 'fifths';
           } else if (denText === '6') {

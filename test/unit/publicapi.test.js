@@ -425,8 +425,7 @@ suite('Public API', function () {
       mq.latex('x_1^2');
       assertMathSpeakEqual(
         mq.mathspeak(),
-        // INCORRECT
-        '"x" squared'
+        '"x" Subscript 1 Baseline squared'
       );
 
       mq.latex('x_1^y');

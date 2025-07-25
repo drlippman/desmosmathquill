@@ -620,6 +620,8 @@ function insLeftOfMeUnlessAtEnd(this: MQNode, cursor: Cursor) {
   return undefined;
 }
 
+const subscriptMathspeakTemplate = ['Subscript,', ', Baseline'];
+
 class SubscriptCommand extends SupSub {
   supsub = 'sub' as const;
 
@@ -632,7 +634,7 @@ class SubscriptCommand extends SupSub {
     ])
   );
 
-  mathspeakTemplate = ['Subscript,', ', Baseline'];
+  mathspeakTemplate = subscriptMathspeakTemplate;
 
   ariaLabel = 'subscript';
 }
@@ -657,7 +659,14 @@ class SuperscriptCommand extends SupSub {
       var innerText = getCtrlSeqsFromBlock(child);
       // If the superscript is a whole number, shorten the speech that is returned.
       if ((!opts || !opts.ignoreShorthand) && intRgx.test(innerText)) {
-        return wholeNumberPower(child, innerText);
+        let prefix = '';
+        if (this.sub) {
+          prefix =
+            subscriptMathspeakTemplate[0] + ' ' +
+            this.sub.mathspeak() + ' ' +
+            subscriptMathspeakTemplate[1] + ' ';
+        }
+        return prefix + wholeNumberPower(child, innerText);
       }
     }
     return super.mathspeak();

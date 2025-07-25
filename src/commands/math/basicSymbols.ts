@@ -877,7 +877,7 @@ if (!CharCmds['\\']) CharCmds['\\'] = LatexCmds.backslash;
 
 LatexCmds.$ = bindVanillaSymbol('\\$', '$', 'dollar');
 
-LatexCmds['?'] = bindVanillaSymbol('?', '?', 'question');
+LatexCmds['?'] = bindVanillaSymbol('?', '?', 'question mark');
 
 LatexCmds['□'] = LatexCmds.square = bindVanillaSymbol(
   '\\square ',

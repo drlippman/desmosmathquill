@@ -354,8 +354,17 @@ class SupSub extends MathCommand {
   sub?: MathBlock;
   sup?: MathBlock;
   /**
-   * supsub is the initial orientation of the SupSub node; it provides the location to put
-   * the first block seen in parsing, either in the superscript or subscript.
+   * `supsub` is the current or planned shape of the SupSub node.
+   *
+   * It is set before intializing to know where to put the first block seen in parsing,
+   * either in the superscript or subscript. This is necessary e.g. because the SupSub
+   * in both `x_2` and `x^2` have a single MathBlock child, but the child goes to the
+   * subscript in one and the exponent in the other.
+   *
+   * After initialization, either the `sub` or `sup` properties of the `SubSub` are set
+   * at all times. If only one is set, the `supsub` property says which one is set.
+   * If both are set, the `supsub` property could be either 'sup' or 'sub' (it happens
+   * to be whichever state the SupSub was in before the second child block was added).
    */
   supsub: 'sup' | 'sub';
 
@@ -605,6 +614,10 @@ class SupSub extends MathCommand {
     }
     return text('_', this.sub) + text('^', this.sup);
   }
+  // This function is called, for example, when parsing `x_1^2`.
+  // In that case, first a `SupSub("sup")` is created (i.e. a superscript) representing `x^2`,
+  // (with the superscript `2` being added in `finalizeTree`), then the subscript `1` is added
+  // with `addBlock`.
   addBlock(block: MathBlock) {
     if (this.supsub === 'sub') {
       this.sup = this.upInto = (this.sub as MQNode).upOutOf = block;

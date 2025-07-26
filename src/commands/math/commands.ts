@@ -404,7 +404,6 @@ class SupSub extends MathCommand {
     this.supsub = supsub;
   }
 
-
   setEnds(ends: Ends<MathBlock>) {
     pray(
       'SupSub ends must be MathBlocks',
@@ -586,9 +585,12 @@ class SupSub extends MathCommand {
         let prefix = '';
         if (this.sub) {
           prefix =
-            subMathspeakTemplate[0] + ' ' +
-            this.sub.mathspeak() + ' ' +
-            subMathspeakTemplate[1] + ' ';
+            subMathspeakTemplate[0] +
+            ' ' +
+            this.sub.mathspeak() +
+            ' ' +
+            subMathspeakTemplate[1] +
+            ' ';
         }
         return prefix + wholeNumberPower(this.sup, innerText);
       }
@@ -602,7 +604,7 @@ class SupSub extends MathCommand {
     } else if (this.sup) {
       return supMathspeakTemplate;
     } else {
-      return subMathspeakTemplate
+      return subMathspeakTemplate;
     }
   }
   text() {
@@ -702,8 +704,11 @@ function insLeftOfMeUnlessAtEnd(this: MQNode, cursor: Cursor) {
 
 const subMathspeakTemplate = ['Subscript,', ', Baseline'];
 const supMathspeakTemplate = ['Superscript,', ', Baseline'];
-const supSubMathspeakTemplate = ['Subscript,',', Baseline Superscript,', ', Baseline'];
-
+const supSubMathspeakTemplate = [
+  'Subscript,',
+  ', Baseline Superscript,',
+  ', Baseline'
+];
 
 /** Assumes innerText satisfies the `intRgx` */
 function wholeNumberPower(sup: MQNode, innerText: string) {
@@ -730,8 +735,7 @@ function wholeNumberPower(sup: MQNode, innerText: string) {
       suffix = 'rd';
     }
   }
-  var innerMathspeak =
-    typeof sup === 'object' ? sup.mathspeak() : innerText;
+  var innerMathspeak = typeof sup === 'object' ? sup.mathspeak() : innerText;
   return 'to the ' + innerMathspeak + suffix + ' power';
 }
 
@@ -739,7 +743,8 @@ LatexCmds.subscript = LatexCmds._ = () => new SupSub('sub');
 
 LatexCmds.superscript =
   LatexCmds.supscript =
-  LatexCmds['^'] = () => new SupSub('sup');
+  LatexCmds['^'] =
+    () => new SupSub('sup');
 
 class SummationNotation extends MathCommand {
   constructor(ch: string, symbol: string, ariaLabel?: string) {

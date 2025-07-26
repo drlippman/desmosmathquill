@@ -405,28 +405,19 @@ suite('Public API', function () {
         ['x^{21}', '"x" to the 21st power'],
         ['x^{22}', '"x" to the 22nd power'],
         ['x^{23}', '"x" to the 23rd power'],
-        ['x^{24}', '"x" to the 24th power'],
-      ]
+        ['x^{24}', '"x" to the 24th power']
+      ];
 
       for (const [latex, mathspeak] of wholeNumberExponentPairs) {
         mq.latex(latex);
-        assertMathSpeakEqual(
-          mq.mathspeak(),
-          mathspeak
-        );
+        assertMathSpeakEqual(mq.mathspeak(), mathspeak);
       }
 
       mq.latex('x_1');
-      assertMathSpeakEqual(
-        mq.mathspeak(),
-        '"x" Subscript 1 Baseline'
-      );
+      assertMathSpeakEqual(mq.mathspeak(), '"x" Subscript 1 Baseline');
 
       mq.latex('x_1^2');
-      assertMathSpeakEqual(
-        mq.mathspeak(),
-        '"x" Subscript 1 Baseline squared'
-      );
+      assertMathSpeakEqual(mq.mathspeak(), '"x" Subscript 1 Baseline squared');
 
       mq.latex('x_1^y');
       assertMathSpeakEqual(

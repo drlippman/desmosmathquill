@@ -38,16 +38,16 @@ type InequalityData = {
 };
 
 type LatexContext = {
-  latex: string;
-  startIndex: number;
-  endIndex: number;
+  uncleanedLatex: string;
+  uncleanedStartIndex: number;
+  uncleanedEndIndex: number;
   startSelectionBefore?: NodeBase;
   startSelectionAfter?: NodeBase;
   endSelectionBefore?: NodeBase;
   endSelectionAfter?: NodeBase;
   restoreInfo?: {
-    startIndex: number;
-    endIndex: number;
+    uncleanedStartIndex: number;
+    uncleanedEndIndex: number;
     selectionL?: NodeBase;
     selectionR?: NodeBase;
 

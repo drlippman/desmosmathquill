@@ -156,7 +156,7 @@ class Controller_latex extends Controller_keystroke {
       // pass through the tree looking for the nodes at the startIndex and endIndex
       const mappedIndices = mapFromCleanedToUncleanedIndices(
         oldLatex,
-        oldSelectionInfo.ctx.latex,
+        oldSelectionInfo.ctx.uncleanedLatex,
         newSelection
       );
 
@@ -217,15 +217,15 @@ class Controller_latex extends Controller_keystroke {
     ctx: LatexContext;
   } {
     var ctx: LatexContext = {
-      latex: '',
-      startIndex: -1,
-      endIndex: -1
+      uncleanedLatex: '',
+      uncleanedStartIndex: -1,
+      uncleanedEndIndex: -1
     };
 
     if (restoreInfo) {
       ctx.restoreInfo = {
-        startIndex: restoreInfo.uncleanStartIndex,
-        endIndex: restoreInfo.uncleanEndIndex
+        uncleanedStartIndex: restoreInfo.uncleanStartIndex,
+        uncleanedEndIndex: restoreInfo.uncleanEndIndex
       };
     }
 
@@ -252,7 +252,7 @@ class Controller_latex extends Controller_keystroke {
     this.root.latexRecursive(ctx);
 
     // need to clean the latex
-    var uncleanedLatex = ctx.latex;
+    var uncleanedLatex = ctx.uncleanedLatex;
     var cleanLatex = this.cleanLatex(uncleanedLatex);
     const { startIndex, endIndex } = mapFromUncleanedToCleanedIndices(
       uncleanedLatex,
@@ -544,10 +544,10 @@ class Controller_latex extends Controller_keystroke {
 function mapFromUncleanedToCleanedIndices(
   uncleanedLatex: string,
   cleanedLatex: string,
-  indices: { startIndex: number; endIndex: number }
+  indices: { uncleanedStartIndex: number; uncleanedEndIndex: number }
 ) {
-  var startIndex = indices.startIndex;
-  var endIndex = indices.endIndex;
+  var startIndex = indices.uncleanedStartIndex;
+  var endIndex = indices.uncleanedEndIndex;
 
   // assumes that the cleaning process will only remove space characters. We
   // run through the uncleanedLatex and cleanLatex to find differences.
@@ -556,11 +556,11 @@ function mapFromUncleanedToCleanedIndices(
   // startIndex and endIndex if appropriate.
   for (
     var uncleanIdx = 0, cleanIdx = 0;
-    uncleanIdx < indices.endIndex;
+    uncleanIdx < indices.uncleanedEndIndex;
     uncleanIdx++
   ) {
     if (uncleanedLatex[uncleanIdx] !== cleanedLatex[cleanIdx]) {
-      if (uncleanIdx < indices.startIndex) {
+      if (uncleanIdx < indices.uncleanedStartIndex) {
         startIndex -= 1;
       }
       endIndex -= 1;

@@ -259,9 +259,9 @@ LatexCmds.textcolor = class extends MathCommand {
   latexRecursive(ctx: LatexContext) {
     this.checkCursorContextOpen(ctx);
     var blocks0 = this.blocks![0];
-    ctx.latex += '\\textcolor{' + this.color + '}{';
+    ctx.uncleanedLatex += '\\textcolor{' + this.color + '}{';
     blocks0.latexRecursive(ctx);
-    ctx.latex += '}';
+    ctx.uncleanedLatex += '}';
     this.checkCursorContextClose(ctx);
   }
   parser() {
@@ -314,9 +314,9 @@ var Class = (LatexCmds['class'] = class extends MathCommand {
     this.checkCursorContextOpen(ctx);
 
     var blocks0 = this.blocks![0];
-    ctx.latex += '\\class{' + this.cls + '}{';
+    ctx.uncleanedLatex += '\\class{' + this.cls + '}{';
     blocks0.latexRecursive(ctx);
-    ctx.latex += '}';
+    ctx.uncleanedLatex += '}';
 
     this.checkCursorContextClose(ctx);
   }
@@ -488,29 +488,29 @@ class SupSub extends MathCommand {
     this.checkCursorContextOpen(ctx);
 
     if (this.sub) {
-      ctx.latex += '_{';
-      const beforeLength = ctx.latex.length;
+      ctx.uncleanedLatex += '_{';
+      const beforeLength = ctx.uncleanedLatex.length;
       this.sub.latexRecursive(ctx);
-      const afterLength = ctx.latex.length;
+      const afterLength = ctx.uncleanedLatex.length;
       if (beforeLength === afterLength) {
         // nothing was written. so we write a space
-        ctx.latex += ' ';
+        ctx.uncleanedLatex += ' ';
       }
 
-      ctx.latex += '}';
+      ctx.uncleanedLatex += '}';
     }
 
     if (this.sup) {
-      ctx.latex += '^{';
-      const beforeLength = ctx.latex.length;
+      ctx.uncleanedLatex += '^{';
+      const beforeLength = ctx.uncleanedLatex.length;
       this.sup.latexRecursive(ctx);
-      const afterLength = ctx.latex.length;
+      const afterLength = ctx.uncleanedLatex.length;
       if (beforeLength === afterLength) {
         // nothing was written. so we write a space
-        ctx.latex += ' ';
+        ctx.uncleanedLatex += ' ';
       }
 
-      ctx.latex += '}';
+      ctx.uncleanedLatex += '}';
     }
 
     this.checkCursorContextClose(ctx);
@@ -727,25 +727,25 @@ class SummationNotation extends MathCommand {
   latexRecursive(ctx: LatexContext) {
     this.checkCursorContextOpen(ctx);
 
-    ctx.latex += this.ctrlSeq + '_{';
-    let beforeLength = ctx.latex.length;
+    ctx.uncleanedLatex += this.ctrlSeq + '_{';
+    let beforeLength = ctx.uncleanedLatex.length;
     this.getEnd(L).latexRecursive(ctx);
-    let afterLength = ctx.latex.length;
+    let afterLength = ctx.uncleanedLatex.length;
     if (afterLength === beforeLength) {
       // nothing was written so we write a space
-      ctx.latex += ' ';
+      ctx.uncleanedLatex += ' ';
     }
 
-    ctx.latex += '}^{';
-    beforeLength = ctx.latex.length;
+    ctx.uncleanedLatex += '}^{';
+    beforeLength = ctx.uncleanedLatex.length;
     this.getEnd(R).latexRecursive(ctx);
-    afterLength = ctx.latex.length;
+    afterLength = ctx.uncleanedLatex.length;
     if (beforeLength === afterLength) {
       // nothing was written so we write a space
-      ctx.latex += ' ';
+      ctx.uncleanedLatex += ' ';
     }
 
-    ctx.latex += '}';
+    ctx.uncleanedLatex += '}';
     this.checkCursorContextClose(ctx);
   }
   mathspeak() {
@@ -1069,7 +1069,7 @@ class Token extends MQSymbol {
   latexRecursive(ctx: LatexContext): void {
     this.checkCursorContextOpen(ctx);
 
-    ctx.latex += '\\token{' + this.tokenId + '}';
+    ctx.uncleanedLatex += '\\token{' + this.tokenId + '}';
 
     this.checkCursorContextClose(ctx);
   }
@@ -1175,11 +1175,11 @@ class NthRoot extends SquareRoot {
   latexRecursive(ctx: LatexContext) {
     this.checkCursorContextOpen(ctx);
 
-    ctx.latex += '\\sqrt[';
+    ctx.uncleanedLatex += '\\sqrt[';
     this.getEnd(L).latexRecursive(ctx);
-    ctx.latex += ']{';
+    ctx.uncleanedLatex += ']{';
     this.getEnd(R).latexRecursive(ctx);
-    ctx.latex += '}';
+    ctx.uncleanedLatex += '}';
 
     this.checkCursorContextClose(ctx);
   }
@@ -1328,9 +1328,9 @@ class Bracket extends DelimsNode {
   latexRecursive(ctx: LatexContext) {
     this.checkCursorContextOpen(ctx);
 
-    ctx.latex += '\\left' + this.sides[L].ctrlSeq;
+    ctx.uncleanedLatex += '\\left' + this.sides[L].ctrlSeq;
     this.getEnd(L).latexRecursive(ctx);
-    ctx.latex += '\\right' + this.sides[R].ctrlSeq;
+    ctx.uncleanedLatex += '\\right' + this.sides[R].ctrlSeq;
 
     this.checkCursorContextClose(ctx);
   }
@@ -1869,7 +1869,7 @@ class EmbedNode extends MQSymbol {
   latexRecursive(ctx: LatexContext): void {
     this.checkCursorContextOpen(ctx);
 
-    ctx.latex += this.latex();
+    ctx.uncleanedLatex += this.latex();
 
     this.checkCursorContextClose(ctx);
   }

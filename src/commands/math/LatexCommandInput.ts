@@ -95,9 +95,9 @@ CharCmds['\\'] = class LatexCommandInput extends MathCommand {
   latexRecursive(ctx: LatexContext) {
     this.checkCursorContextOpen(ctx);
 
-    ctx.latex += '\\';
+    ctx.uncleanedLatex += '\\';
     this.getEnd(L).latexRecursive(ctx);
-    ctx.latex += ' ';
+    ctx.uncleanedLatex += ' ';
 
     this.checkCursorContextClose(ctx);
   }

@@ -38,13 +38,26 @@ type InequalityData = {
 };
 
 type LatexContext = {
-  latex: string;
-  startIndex: number;
-  endIndex: number;
+  uncleanedLatex: string;
+  uncleanedStartIndex: number;
+  uncleanedEndIndex: number;
   startSelectionBefore?: NodeBase;
   startSelectionAfter?: NodeBase;
   endSelectionBefore?: NodeBase;
   endSelectionAfter?: NodeBase;
+  restoreInfo?: {
+    uncleanedStartIndex: number;
+    uncleanedEndIndex: number;
+    selectionL?: NodeBase;
+    selectionR?: NodeBase;
+
+    // in the end we expect to have either a cursorL or cursorParent
+    // to use to restore selection. We collect both because of shenanigans
+    // with MathBlock, and maybe others. If the cursorL is defined we will use it. Otherwise
+    // we will fall back to the cursorParent.
+    cursorL?: NodeBase | 0;
+    cursorParent?: NodeBase | 0;
+  };
 };
 
 type ControllerData = any;

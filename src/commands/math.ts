@@ -282,19 +282,19 @@ class MathCommand extends MathElement {
   latexRecursive(ctx: LatexContext) {
     this.checkCursorContextOpen(ctx);
 
-    ctx.latex += this.ctrlSeq || '';
+    ctx.uncleanedLatex += this.ctrlSeq || '';
     this.eachChild((child) => {
-      ctx.latex += '{';
+      ctx.uncleanedLatex += '{';
 
-      let beforeLength = ctx.latex.length;
+      let beforeLength = ctx.uncleanedLatex.length;
       child.latexRecursive(ctx);
-      let afterLength = ctx.latex.length;
+      let afterLength = ctx.uncleanedLatex.length;
       if (beforeLength === afterLength) {
         // nothing was written so we write a space
-        ctx.latex += ' ';
+        ctx.uncleanedLatex += ' ';
       }
 
-      ctx.latex += '}';
+      ctx.uncleanedLatex += '}';
     });
 
     this.checkCursorContextClose(ctx);
@@ -405,7 +405,7 @@ class MQSymbol extends MathCommand {
 
   latexRecursive(ctx: LatexContext) {
     this.checkCursorContextOpen(ctx);
-    ctx.latex += this.ctrlSeq || '';
+    ctx.uncleanedLatex += this.ctrlSeq || '';
     this.checkCursorContextClose(ctx);
   }
   text() {

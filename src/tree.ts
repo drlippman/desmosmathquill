@@ -339,25 +339,75 @@ class NodeBase {
     return '';
   }
   latex() {
-    let ctx: LatexContext = { latex: '', startIndex: -1, endIndex: -1 };
+    let ctx: LatexContext = {
+      uncleanedLatex: '',
+      uncleanedStartIndex: -1,
+      uncleanedEndIndex: -1
+    };
     this.latexRecursive(ctx);
-    return ctx.latex;
+    return ctx.uncleanedLatex;
   }
   latexRecursive(_ctx: LatexContext): void {}
   checkCursorContextOpen(ctx: LatexContext) {
+    const latexLength = ctx.uncleanedLatex.length;
     if (ctx.startSelectionBefore === this) {
-      ctx.startIndex = ctx.latex.length;
+      ctx.uncleanedStartIndex = latexLength;
     }
     if (ctx.endSelectionBefore === this) {
-      ctx.endIndex = ctx.latex.length;
+      ctx.uncleanedEndIndex = latexLength;
+    }
+
+    const restoreInfo = ctx.restoreInfo;
+    if (restoreInfo) {
+      if (latexLength === restoreInfo.uncleanedStartIndex) {
+        if (restoreInfo.uncleanedEndIndex === restoreInfo.uncleanedStartIndex) {
+          // caret
+          if (latexLength === restoreInfo.uncleanedStartIndex) {
+            restoreInfo.cursorParent = this.parent;
+          }
+        } else {
+          // selection
+          restoreInfo.selectionL = this;
+        }
+      }
     }
   }
   checkCursorContextClose(ctx: LatexContext) {
+    const latexLength = ctx.uncleanedLatex.length;
+
     if (ctx.startSelectionAfter === this) {
-      ctx.startIndex = ctx.latex.length;
+      ctx.uncleanedStartIndex = latexLength;
     }
     if (ctx.endSelectionAfter === this) {
-      ctx.endIndex = ctx.latex.length;
+      ctx.uncleanedEndIndex = latexLength;
+    }
+
+    const restoreInfo = ctx.restoreInfo;
+    if (restoreInfo) {
+      if (latexLength === restoreInfo.uncleanedEndIndex) {
+        if (restoreInfo.uncleanedStartIndex === restoreInfo.uncleanedEndIndex) {
+          // caret
+          if (!restoreInfo.cursorL) {
+            restoreInfo.cursorL = this;
+          }
+
+          if (!restoreInfo.cursorParent) {
+            restoreInfo.cursorParent = this.parent;
+          } else if (restoreInfo.cursorParent === this.parent) {
+            // this seems important for when we enter an empty MathBlock. For instance cursor in between "()" or
+            // in an empty square root.
+            restoreInfo.cursorParent = this;
+            restoreInfo.cursorL = 0;
+          }
+        } else {
+          // selection
+          // it seems like when closing the selection we want the very first node that matches
+          // the index, not any later ones.
+          if (!restoreInfo.selectionR) {
+            restoreInfo.selectionR = this;
+          }
+        }
+      }
     }
   }
   finalizeTree(_options: CursorOptions, _dir?: Direction) {}

@@ -85,11 +85,11 @@ class TextBlock extends MQNode {
 
     var contents = this.textContents();
     if (contents.length > 0) {
-      ctx.latex += this.ctrlSeq + '{';
-      ctx.latex += contents
+      ctx.uncleanedLatex += this.ctrlSeq + '{';
+      ctx.uncleanedLatex += contents
         .replace(/\\/g, '\\backslash ')
         .replace(/[{}]/g, '\\$&');
-      ctx.latex += '}';
+      ctx.uncleanedLatex += '}';
     }
 
     this.checkCursorContextClose(ctx);
@@ -361,7 +361,7 @@ class TextPiece extends MQNode {
   }
   latexRecursive(ctx: LatexContext) {
     this.checkCursorContextOpen(ctx);
-    ctx.latex += this.textStr;
+    ctx.uncleanedLatex += this.textStr;
     this.checkCursorContextClose(ctx);
   }
 
@@ -509,9 +509,9 @@ class RootMathCommand extends MathCommand {
   }
   latexRecursive(ctx: LatexContext) {
     this.checkCursorContextOpen(ctx);
-    ctx.latex += '$';
+    ctx.uncleanedLatex += '$';
     this.getEnd(L).latexRecursive(ctx);
-    ctx.latex += '$';
+    ctx.uncleanedLatex += '$';
     this.checkCursorContextClose(ctx);
   }
 }

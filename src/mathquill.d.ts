@@ -103,6 +103,8 @@ declare namespace MathQuill {
       restrictMismatchedBrackets?: boolean | 'none';
       typingSlashCreatesNewFraction?: boolean;
       charsThatBreakOutOfSupSub?: string;
+      charsThatBreakOutOfSupSubVar?: string;
+      charsThatBreakOutOfSupSubOp?: string;
       sumStartsWithNEquals?: boolean;
       autoSubscriptNumerals?: boolean;
       supSubsRequireOperand?: boolean;

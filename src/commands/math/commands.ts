@@ -344,6 +344,8 @@ function getCtrlSeqsFromBlock(block: NodeRef): string {
 }
 
 Options.prototype.charsThatBreakOutOfSupSub = '';
+Options.prototype.charsThatBreakOutOfSupSubVar = '';
+Options.prototype.charsThatBreakOutOfSupSubOp = '';
 
 /**
  * A SupSub node is a superscript, subscript, or both. It is possible to edit a SupSub node
@@ -494,6 +496,7 @@ class SupSub extends MathCommand {
     }
     var endsL = this.getEnd(L);
     endsL.write = function (cursor: Cursor, ch: string) {
+      const nobreaksubsup = false;
       if (
         cursor.options.autoSubscriptNumerals &&
         this === (this.parent as SupSub).sub &&
@@ -512,10 +515,34 @@ class SupSub extends MathCommand {
         cursor[L] &&
         !cursor[R] &&
         !cursor.selection &&
+        !nobreaksubsup &&
         cursor.options.charsThatBreakOutOfSupSub.indexOf(ch) > -1
       ) {
         cursor.insRightOf(this.parent);
         cursor.controller.aria.queue('Baseline');
+      }
+      if (
+        cursor[L] && 
+        !cursor[R] && 
+        !cursor.selection && 
+        !nobreaksubsup && 
+        this.parent[L] instanceof Variable
+      ) {
+        if (
+          (
+            this.parent[L].isItalic !== false && 
+            this.parent[L].ctrlSeq !== 'e' && 
+            !cursor[L].isPartOfOperator && 
+            cursor.options.charsThatBreakOutOfSupSubVar.indexOf(ch) > -1
+          ) || 
+          (
+            this.parent[L].isPartOfOperator && 
+            cursor.options.charsThatBreakOutOfSupSubOp.indexOf(ch) > -1
+          )
+        ) {
+          cursor.insRightOf(this.parent);
+          cursor.controller.aria.queue('Baseline');
+        }
       }
       MathBlock.prototype.write.call(this, cursor, ch);
     };

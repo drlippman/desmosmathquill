@@ -1258,6 +1258,7 @@ class NthRoot extends SquareRoot {
   }
 }
 LatexCmds.nthroot = NthRoot;
+LatexCmds.root = NthRoot;
 
 LatexCmds.cbrt = class extends NthRoot {
   createLeftOf(cursor: Cursor) {

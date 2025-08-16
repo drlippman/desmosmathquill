@@ -333,7 +333,7 @@ Options.prototype.autoCommands = {
   _maxLength: 0
 };
 baseOptionProcessors.autoCommands = function (cmds: string | undefined) {
-  if (typeof cmds !== 'string' || !/^[a-z]+(?: [a-z]+)*$/i.test(cmds)) {
+  if (typeof cmds !== 'string' || !/^[a-z]+(?: \^?[a-z]+)*$/i.test(cmds)) {
     throw '"' + cmds + '" not a space-delimited list of only letters';
   }
   var list = cmds.split(' ');
@@ -459,8 +459,11 @@ class Letter extends Variable {
       // sequence of letters
       let str = letterSequenceEndingAtNode(this, maxLength) ?? '';
       // check for an autocommand, going thru substrings longest to shortest
+      let i = 0;
       while (str.length) {
-        if (autoCmds.hasOwnProperty(str)) {
+        if (autoCmds.hasOwnProperty(str) || 
+          (i === 0 && autoCmds.hasOwnProperty('^' + str))
+        ) {
           let l: NodeRef = this;
           for (let i = 1; l && i < str.length; i += 1, l = l[L]);
 
@@ -477,6 +480,7 @@ class Letter extends Variable {
 
           return node.createLeftOf(cursor);
         }
+        i++;
         str = str.slice(1);
       }
     }

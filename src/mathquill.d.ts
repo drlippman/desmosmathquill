@@ -132,6 +132,8 @@ declare namespace MathQuill {
       quietEmptyDelimiters?: string;
       disableAutoSubstitutionInSubscripts?: boolean | { except: string };
       interpretTildeAsSim?: boolean;
+      quickPlusMinus?: boolean;
+      addCommands?: {[key: string]: [string, string, string]};
       handlers?: HandlerOptions<BaseMathQuill<$>>;
     }
 

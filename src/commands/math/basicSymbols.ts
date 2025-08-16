@@ -387,6 +387,26 @@ baseOptionProcessors.autoParenthesizedFunctions = function (cmds) {
   return dict;
 };
 
+baseOptionProcessors.addCommands = function (cmds) {
+  for (const str in cmds) {
+    if (LatexCmds.hasOwnProperty(str)) {
+      throw '"' + str + '" is a built-in operator name';
+    }
+    if (cmds[str].length != 3) {
+      throw '"' + str + '" does not have the required number of elements';
+    }
+    if (cmds[str][0] == 'VanillaSymbol') {
+      LatexCmds[str] = bindVanillaSymbol(cmds[str][1], cmds[str][2]);
+    } else if (cmds[str][0] == 'BinaryOperator') {
+      LatexCmds[str] = bindBinaryOperator(cmds[str][1], cmds[str][2]);
+    } else if (cmds[str][0] == 'Variable') {
+      LatexCmds[str] = bindVariable(cmds[str][1], cmds[str][2]);
+    } else {
+      throw '"' + str + '" is using an unsupported symbol type';
+    }
+  }
+}
+
 function letterSequenceEndingAtNode(node: NodeRef, maxLength: number) {
   let str = '';
   let i = 0;
@@ -1259,6 +1279,21 @@ var PlusMinus = class extends BinaryOperator {
       : '';
 
     return this;
+  }
+  createLeftOf(cursor: Cursor) {
+    const cursorL = cursor[L];
+    if (cursor.options.quickPlusMinus && cursorL instanceof PlusMinus && cursorL.ctrlSeq === '+' && this.ctrlSeq === '-') {
+      var l = cursorL;
+      cursor[L] = l[L];
+      l.remove();
+      new PlusMinus('\\pm ', h.entityText('&plusmn;'), 'plus-or-minus').createLeftOf(cursor);
+      (cursor[L] as MQNode).bubble(function (node) {
+        node.reflow();
+        return undefined;
+      });
+      return;
+    }
+    super.createLeftOf(cursor);
   }
 };
 

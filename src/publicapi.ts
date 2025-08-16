@@ -62,6 +62,8 @@ const processedOptions = {
   leftRightIntoCmdGoes: true,
   maxDepth: true,
   interpretTildeAsSim: true,
+  quickPlusMinus: true,
+  addCommands: true,
   disableAutoSubstitutionInSubscripts: true
 };
 type ProcessedOption = keyof typeof processedOptions;
@@ -127,6 +129,8 @@ class Options {
     | boolean
     | { except: { [name in string]?: true } };
   interpretTildeAsSim: boolean;
+  quickPlusMinus: boolean;
+  addCommands: void;
   handlers?: {
     fns: HandlerOptions;
     APIClasses: APIClasses;

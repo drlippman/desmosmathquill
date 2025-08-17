@@ -75,6 +75,60 @@ class MathElement extends MQNode {
       });
     }
   }
+
+  autoPostParenthesize(cursor: Cursor, cmd: MathElement) {
+    var autoParenOperators = cursor.options.autoParenOperators;
+
+    var cursorL = cursor[L];
+    
+    if (autoParenOperators && 
+      !(cmd instanceof Bracket) && 
+      !(cmd instanceof SupSub) && 
+      cursorL
+    ) {
+      if (
+        // if left is part of operator, but right is not
+        (cursorL.isPartOfOperator && (!cursorL[R] || cursorL[R].isPartOfOperator)) ||  
+        // or left is sup/sub, and left of that is operator
+        ((cursorL.hasOwnProperty("sup") || cursorL.hasOwnProperty("sub")) &&
+          cursorL[L] && cursorL[L].isPartOfOperator
+        )
+      ) {
+        // check to make sure additional letter doesn't make a longer op name
+        var str = '', l = cursorL, issubsup = false;
+        // if sub/sup, grab base operator
+        if ((cursorL.hasOwnProperty("sup") || cursorL.hasOwnProperty("sub")) &&
+            cursorL[L] && cursorL[L].isPartOfOperator
+        ) {
+            l = cursorL[L];
+            issubsup = true;
+        }
+        while (l.isPartOfOperator && l instanceof Letter) {
+          str = l.letter + str;
+          if (l[L] === 0) { break; }
+          l = l[L];
+        }
+        if (autoParenOperators === true || autoParenOperators.hasOwnProperty(str)) {
+          var partofop = false;
+          if (cmd instanceof Letter) {
+            str += cmd.letter;
+            for (var opname in cursor.options.autoOperatorNames) {
+                if (opname.substring(0, str.length) === str) {
+                    partofop = true;
+                    break;
+                }
+            }
+          }
+          const maxLength = (autoParenOperators === true) ? 
+                          cursor.options.autoOperatorNames._maxLength 
+                          : autoParenOperators._maxLength;
+          if (maxLength == 0 || !partofop || issubsup) {
+              cursor.parent.write(cursor, '('); // true
+          }
+        }
+      }
+    }
+  }
 }
 
 class DOMView {
@@ -142,68 +196,12 @@ class MathCommand extends MathElement {
     });
   }
 
-  autoPostParenthesize(cursor: Cursor) {
-    var autoParenOperators = cursor.options.autoParenOperators;
-    
-    var cmd = this;
-
-    var cursorL = cursor[L];
-    
-    if (autoParenOperators && 
-      !(cmd instanceof Bracket) && 
-      !(cmd instanceof SupSub) && 
-      cursorL
-    ) {
-      if (
-        // if left is part of operator, but right is not
-        (cursorL.isPartOfOperator && (!cursorL[R] || cursorL[R].isPartOfOperator)) ||  
-        // or left is sup/sub, and left of that is operator
-        ((cursorL.hasOwnProperty("sup") || cursorL.hasOwnProperty("sub")) &&
-          cursorL[L] && cursorL[L].isPartOfOperator
-        )
-      ) {
-        // check to make sure additional letter doesn't make a longer op name
-        var str = '', l = cursorL, issubsup = false;
-        // if sub/sup, grab base operator
-        if ((cursorL.hasOwnProperty("sup") || cursorL.hasOwnProperty("sub")) &&
-            cursorL[L] && cursorL[L].isPartOfOperator
-        ) {
-            l = cursorL[L];
-            issubsup = true;
-        }
-        while (l.isPartOfOperator && l instanceof Letter) {
-          str = l.letter + str;
-          if (l[L] === 0) { break; }
-          l = l[L];
-        }
-        if (autoParenOperators === true || autoParenOperators.hasOwnProperty(str)) {
-          var partofop = false;
-          if (cmd instanceof Letter) {
-            str += cmd.letter;
-            for (var opname in cursor.options.autoOperatorNames) {
-                if (opname.substring(0, str.length) === str) {
-                    partofop = true;
-                    break;
-                }
-            }
-          }
-          const maxLength = (autoParenOperators === true) ? 
-                          cursor.options.autoOperatorNames._maxLength 
-                          : autoParenOperators._maxLength;
-          if (maxLength == 0 || !partofop || issubsup) {
-              cursor.parent.write(cursor, '('); // true
-          }
-        }
-      }
-    }
-  }
-
   // createLeftOf(cursor) and the methods it calls
   createLeftOf(cursor: Cursor) {
     var cmd = this;
     var replacedFragment = cmd.replacedFragment;
 
-    this.autoPostParenthesize(cursor);
+    this.autoPostParenthesize(cursor, cmd);
 
     cmd.createBlocks();
     super.createLeftOf(cursor);
@@ -718,6 +716,11 @@ class MathBlock extends MathElement {
       .parse(latex);
 
     if (block && !block.isEmpty() && block.prepareInsertionAt(cursor)) {
+
+      if (block.ends[L] instanceof MathElement) {
+        this.autoPostParenthesize(cursor, block.ends[L]);
+      }
+
       block
         .children()
         .adopt(cursor.parent, cursor[L] as NodeRef, cursor[R] as NodeRef); // TODO - masking undefined. should be 0

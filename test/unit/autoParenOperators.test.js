@@ -48,7 +48,12 @@ suite('autoParenOperators', function () {
   test('auto paren value from write', function () {
     mq.latex('\\sin');
     mq.write('x');
-    assert.equal(mq.latex(), '\\sin^{2}\\left(x\\right)');
+    assert.equal(mq.latex(), '\\sin\\left(x\\right)');
+  });
+  test('auto paren value from write with paren', function () {
+    mq.latex('\\sin');
+    mq.write('\\left(x\\right)');
+    assert.equal(mq.latex(), '\\sin\\left(x\\right)');
   });
 
 });

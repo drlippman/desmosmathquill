@@ -1276,7 +1276,7 @@ suite('typing with auto-replaces', function () {
   suite('autoCommands', function () {
     var normalConfig = {
       autoOperatorNames: 'sin pp',
-      autoCommands: 'pi tau phi theta Gamma sum prod sqrt nthroot cbrt percent'
+      autoCommands: 'pi tau phi theta Gamma sum prod sqrt nthroot root cbrt percent'
     };
     var subscriptConfig = {
       autoOperatorNames: 'sin pp',
@@ -1308,6 +1308,11 @@ suite('typing with auto-replaces', function () {
       mq.typedText('n').keystroke('Right').typedText('100').keystroke('Right');
       assertLatex('\\sqrt[n]{100}');
       assertMathspeak('Root Index "n" Start Root 100 End Root');
+      mq.keystroke('Ctrl-Backspace');
+
+      mq.typedText('root');
+      mq.typedText('n').keystroke('Right').typedText('100').keystroke('Right');
+      assertLatex('\\sqrt[n]{100}');
       mq.keystroke('Ctrl-Backspace');
 
       mq.typedText('pi');

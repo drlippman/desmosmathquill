@@ -102,6 +102,7 @@ class Options {
   charsThatBreakOutOfSupSubOp: string;
   sumStartsWithNEquals?: boolean;
   autoSubscriptNumerals?: boolean;
+  autoSubscriptBrackets?: boolean;
   supSubsRequireOperand?: boolean;
   spaceBehavesLikeTab?: boolean;
   typingAsteriskWritesTimesSymbol?: boolean;

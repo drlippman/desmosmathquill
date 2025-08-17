@@ -235,12 +235,25 @@ class Digit extends DigitGroupingChar {
         : undefined;
 
     if (
-      cursor.options.autoSubscriptNumerals &&
-      cursor.parent !== cursorParentParentSub &&
-      ((cursorL instanceof Variable && cursorL.isItalic !== false) ||
-        (cursorL instanceof SupSub &&
-          cursorLL instanceof Variable &&
-          cursorLL.isItalic !== false))
+      (
+        cursor.options.autoSubscriptNumerals &&
+        cursor.parent !== cursorParentParentSub &&
+        ((cursorL instanceof Variable && cursorL.isItalic !== false) ||
+          (cursorL instanceof SupSub &&
+            cursorLL instanceof Variable &&
+            cursorLL.isItalic !== false)
+        )
+      ) ||
+      (
+        cursor.options.autoSubscriptBrackets &&
+        cursor.parent !== cursorParentParentSub &&
+        ((cursorL instanceof Bracket && cursorL.sides[R].ch == ')') ||
+          (cursorL instanceof SupSub &&
+            cursorLL instanceof Bracket &&
+            cursorLL.sides[R].ch == ')'
+          )
+        )
+      )
     ) {
       new SupSub('sub').createLeftOf(cursor);
       super.createLeftOf(cursor);

@@ -132,6 +132,7 @@ declare namespace MathQuill {
       autoCommands?: string;
       logAriaAlerts?: boolean;
       autoParenthesizedFunctions?: string;
+      autoParenOperators?: string | boolean;
       quietEmptyDelimiters?: string;
       disableAutoSubstitutionInSubscripts?: boolean | { except: string };
       interpretTildeAsSim?: boolean;

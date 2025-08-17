@@ -56,6 +56,7 @@ const processedOptions = {
   autoCommands: true,
   quietEmptyDelimiters: true,
   autoParenthesizedFunctions: true,
+  autoParenOperators: true,
   autoOperatorNames: true,
   infixOperatorNames: true,
   prefixOperatorNames: true,
@@ -127,6 +128,7 @@ class Options {
   prefixOperatorNames: { [name in string]?: true };
   autoCommands: AutoDict;
   autoParenthesizedFunctions: AutoDict;
+  autoParenOperators: AutoDict | boolean;
   quietEmptyDelimiters: { [id: string]: any };
   disableAutoSubstitutionInSubscripts?:
     | boolean

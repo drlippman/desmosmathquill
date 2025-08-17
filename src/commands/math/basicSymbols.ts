@@ -400,6 +400,29 @@ baseOptionProcessors.autoParenthesizedFunctions = function (cmds) {
   return dict;
 };
 
+Options.prototype.autoParenOperators = { _maxLength: 0 };
+baseOptionProcessors.autoParenOperators = function (cmds) {
+  if (cmds === true) {
+    return true;
+  }
+  if (typeof cmds !== 'string' || !/^[a-z]+(?: [a-z]+)*$/i.test(cmds)) {
+    throw '"' + cmds + '" not a space-delimited list of only letters';
+  }
+  var list = cmds.split(' ');
+  var dict: AutoDict = {};
+  var maxLength = 0;
+  for (var i = 0; i < list.length; i += 1) {
+    var cmd = list[i];
+    if (cmd.length < 2) {
+      throw 'autocommand "' + cmd + '" not minimum length of 2';
+    }
+    dict[cmd] = 1;
+    maxLength = max(maxLength, cmd.length);
+  }
+  dict._maxLength = maxLength;
+  return dict;
+};
+
 baseOptionProcessors.addCommands = function (cmds) {
   for (const str in cmds) {
     if (LatexCmds.hasOwnProperty(str)) {
@@ -534,8 +557,62 @@ class Letter extends Variable {
       str = str.slice(1);
     }
   }
+  autoPostParenthesize(cursor: Cursor) {
+    var autoParenOperators = cursor.options.autoParenOperators;
+    
+    var cmd = this;
+
+    var cursorL = cursor[L];
+    
+    if (autoParenOperators && 
+      !(cmd instanceof Bracket) && 
+      !(cmd instanceof SupSub) && 
+      cursorL
+    ) {
+      if (
+        // if left is part of operator, but right is not
+        (cursorL.isPartOfOperator && (!cursorL[R] || cursorL[R].isPartOfOperator)) ||  
+        // or left is sup/sub, and left of that is operator
+        ((cursorL.hasOwnProperty("sup") || cursorL.hasOwnProperty("sub")) &&
+          cursorL[L] && cursorL[L].isPartOfOperator
+        )
+      ) {
+        // check to make sure additional letter doesn't make a longer op name
+        var str = '', l = cursorL, issubsup = false;
+        // if sub/sup, grab base operator
+        if ((cursorL.hasOwnProperty("sup") || cursorL.hasOwnProperty("sub")) &&
+            cursorL[L] && cursorL[L].isPartOfOperator
+        ) {
+            l = cursorL[L];
+            issubsup = true;
+        }
+        while (l.isPartOfOperator && l instanceof Letter) {
+          str = l.letter + str;
+          if (l[L] === 0) { break; }
+          l = l[L];
+        }
+        if (autoParenOperators === true || autoParenOperators.hasOwnProperty(str)) {
+            str += cmd.letter;
+            var partofop = false;
+            for (var opname in cursor.options.autoOperatorNames) {
+                if (opname.substring(0, str.length) === str) {
+                    partofop = true;
+                    break;
+                }
+            }
+            const maxLength = (autoParenOperators === true) ? 
+                            cursor.options.autoOperatorNames._maxLength 
+                            : autoParenOperators._maxLength;
+            if (maxLength == 0 || !partofop || issubsup) {
+                cursor.parent.write(cursor, '('); // true
+            }
+        }
+      }
+    }
+  }
 
   createLeftOf(cursor: Cursor) {
+    this.autoPostParenthesize(cursor);
     super.createLeftOf(cursor);
 
     this.checkAutoCmds(cursor);

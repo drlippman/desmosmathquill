@@ -557,62 +557,8 @@ class Letter extends Variable {
       str = str.slice(1);
     }
   }
-  autoPostParenthesize(cursor: Cursor) {
-    var autoParenOperators = cursor.options.autoParenOperators;
-    
-    var cmd = this;
-
-    var cursorL = cursor[L];
-    
-    if (autoParenOperators && 
-      !(cmd instanceof Bracket) && 
-      !(cmd instanceof SupSub) && 
-      cursorL
-    ) {
-      if (
-        // if left is part of operator, but right is not
-        (cursorL.isPartOfOperator && (!cursorL[R] || cursorL[R].isPartOfOperator)) ||  
-        // or left is sup/sub, and left of that is operator
-        ((cursorL.hasOwnProperty("sup") || cursorL.hasOwnProperty("sub")) &&
-          cursorL[L] && cursorL[L].isPartOfOperator
-        )
-      ) {
-        // check to make sure additional letter doesn't make a longer op name
-        var str = '', l = cursorL, issubsup = false;
-        // if sub/sup, grab base operator
-        if ((cursorL.hasOwnProperty("sup") || cursorL.hasOwnProperty("sub")) &&
-            cursorL[L] && cursorL[L].isPartOfOperator
-        ) {
-            l = cursorL[L];
-            issubsup = true;
-        }
-        while (l.isPartOfOperator && l instanceof Letter) {
-          str = l.letter + str;
-          if (l[L] === 0) { break; }
-          l = l[L];
-        }
-        if (autoParenOperators === true || autoParenOperators.hasOwnProperty(str)) {
-            str += cmd.letter;
-            var partofop = false;
-            for (var opname in cursor.options.autoOperatorNames) {
-                if (opname.substring(0, str.length) === str) {
-                    partofop = true;
-                    break;
-                }
-            }
-            const maxLength = (autoParenOperators === true) ? 
-                            cursor.options.autoOperatorNames._maxLength 
-                            : autoParenOperators._maxLength;
-            if (maxLength == 0 || !partofop || issubsup) {
-                cursor.parent.write(cursor, '('); // true
-            }
-        }
-      }
-    }
-  }
-
+  
   createLeftOf(cursor: Cursor) {
-    this.autoPostParenthesize(cursor);
     super.createLeftOf(cursor);
 
     this.checkAutoCmds(cursor);

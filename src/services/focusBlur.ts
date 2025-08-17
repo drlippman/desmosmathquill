@@ -67,7 +67,7 @@ class Controller_focusBlur extends Controller_exportText {
       this.updateMathspeak({ emptyContent: true });
       this.scrollHoriz();
     });
-    window.addEventListener('blur', this.handleWindowBlur);
+    window.addEventListener('focusout', this.handleWindowBlur);
   };
 
   private handleTextareaFocusStatic = () => {
@@ -102,7 +102,7 @@ class Controller_focusBlur extends Controller_exportText {
     // not directly in the textarea blur handler so has to be
     this.cursor.hide().parent.blur(this.cursor); // synchronous with/in the same frame as
     domFrag(this.container).removeClass('mq-focused'); // clearing/blurring selection
-    window.removeEventListener('blur', this.handleWindowBlur);
+    window.removeEventListener('focusout', this.handleWindowBlur);
   }
 
   addEditableFocusBlurListeners() {

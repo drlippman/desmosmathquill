@@ -6,7 +6,10 @@ type HTMLTagName =
   | 'big'
   | 'sup'
   | 'var'
-  | 'br';
+  | 'br'
+  | 'table'
+  | 'tr'
+  | 'td';
 type SVGTagName = 'svg' | 'path';
 
 interface CreateElementAttributes {

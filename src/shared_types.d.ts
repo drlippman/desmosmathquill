@@ -95,6 +95,8 @@ type LatexCmd =
 type LatexCmds = Record<string, LatexCmd>;
 type CharCmds = Record<string, LatexCmd>;
 
+type Environments = Record<string, Environment>;
+
 declare var validateAutoCommandsOption: any;
 
 type JQSelector =

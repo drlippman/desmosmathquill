@@ -426,7 +426,7 @@ function getInterface(v: number): MathQuill.v3.API | MathQuill.v1.API {
         cursor = ctrlr.cursor;
       if (/^\\[a-z]+$/i.test(cmd) && !cursor.isTooDeep()) {
         cmd = cmd.slice(1);
-        var klass = (LatexCmds as LatexCmdsAny)[cmd];
+        var klass = (LatexCmds as LatexCmdsAny)[cmd] || Environments[cmd];
         var node;
         if (klass) {
           if (klass.constructor) {

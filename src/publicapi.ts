@@ -426,7 +426,7 @@ function getInterface(v: number): MathQuill.v3.API | MathQuill.v1.API {
         cursor = ctrlr.cursor;
       if (/^\\[a-z]+$/i.test(cmd) && !cursor.isTooDeep()) {
         cmd = cmd.slice(1);
-        var klass = (LatexCmds as LatexCmdsAny)[cmd] || Environments[cmd];
+        var klass = (LatexCmds as LatexCmdsAny)[cmd] || EnvironmentCmds[cmd];
         var node;
         if (klass) {
           if (klass.constructor) {
@@ -439,6 +439,23 @@ function getInterface(v: number): MathQuill.v3.API | MathQuill.v1.API {
         } /* TODO: API needs better error reporting */ else;
       } else cursor.parent.write(cursor, cmd);
 
+      ctrlr.scrollHoriz();
+      if (ctrlr.blurred) cursor.hide().parent.blur(cursor);
+      return this;
+    }
+    matrixCmd(cmd: string) {
+      var ctrlr = this.__controller.notify(undefined),
+        cursor = ctrlr.cursor;
+
+      if (cursor.parent instanceof MatrixCell && cursor.parent.parent instanceof Matrix) {
+        var blockindex = cursor.parent.parent.blocks.indexOf(cursor.parent as MatrixCell);
+        if (cmd === 'addColumn') {
+          cursor.parent.parent.addColumn(blockindex);
+        } else if (cmd === 'addRow') {
+          cursor.parent.parent.addRow(blockindex);
+        }
+      }
+      this.reflow();
       ctrlr.scrollHoriz();
       if (ctrlr.blurred) cursor.hide().parent.blur(cursor);
       return this;

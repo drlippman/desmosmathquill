@@ -21,15 +21,27 @@ var SVG_SYMBOLS = {
   '[': {
     width: '.55em',
     html: () =>
-      h('svg', { preserveAspectRatio: 'none', viewBox: '0 0 11 24' }, [
-        h('path', { d: 'M8 0 L3 0 L3 24 L8 24 L8 23 L4 23 L4 1 L8 1' })
+      h('svg', { preserveAspectRatio: 'none', viewBox: '0 0 100 100' }, [
+        h('path', { 
+          'vector-effect': 'non-scaling-stroke',
+          'stroke-width': 1,
+          'stroke': 'black',
+          'fill': 'none',
+          d: 'M80 1 L30 1 L30 99 L80 99' 
+        })
       ])
   },
   ']': {
     width: '.55em',
     html: () =>
-      h('svg', { preserveAspectRatio: 'none', viewBox: '0 0 11 24' }, [
-        h('path', { d: 'M3 0 L8 0 L8 24 L3 24 L3 23 L7 23 L7 1 L3 1' })
+      h('svg', { preserveAspectRatio: 'none', viewBox: '0 0 100 100' }, [
+        h('path', { 
+          'vector-effect': 'non-scaling-stroke', 
+          'stroke-width': 1,
+          'stroke': 'black',
+          'fill': 'none',
+          d: 'M20 1 L70 1 L70 99 L20 99' 
+        })
       ])
   },
   '(': {
@@ -2041,7 +2053,11 @@ class Matrix extends Environment {
         ctx.uncleanedLatex += (row !== cell.row) ? self.delimiters.row : self.delimiters.column;
       }
       row = cell.row;
-      cell.latexRecursive(ctx);
+      if (cell.isEmpty()) {
+        ctx.uncleanedLatex += '{}';
+      } else {
+        cell.latexRecursive(ctx);
+      }
     });
 
     ctx.uncleanedLatex += wrappers[1];
@@ -2073,7 +2089,6 @@ class Matrix extends Environment {
         if (tds.length > 0) {
           rows.push(h('tr', {}, tds));
         }
-        this.rowSize = rows.length;
 
         return h('span', { class: 'mq-matrix mq-non-leaf mq-bracket-container' }, [
           h(
@@ -2084,7 +2099,10 @@ class Matrix extends Environment {
             },
             [leftBracketSymbol.html()]
           ),
-          h('table', { class: 'mq-non-left' }, rows),
+          h('table', { 
+            class: 'mq-non-left',
+            style: 'margin-left:' + leftBracketSymbol.width + '; margin-right:' + rightBracketSymbol.width
+           }, rows),
           h(
             'span',
             {
@@ -2121,26 +2139,26 @@ class Matrix extends Environment {
       .many()
       .skip(optWhitespace)
       .then(function (items) {
-        var blocks: MathBlock[] = [];
         var row = 0;
-        self.blocks = [];
+        self.blocks.forEach(function (cell) {
+          cell.remove();
+        });
 
-        function addCell() {
-          self.blocks.push(new MatrixCell(row, self, blocks));
-          blocks = [];
-        }
-
+        var cellcnt = 0;
         for (var i = 0; i < items.length; i += 1) {
           let itemi = items[i];
           if (itemi instanceof MathBlock) {
-            blocks.push(itemi);
+            self.blocks.push(new MatrixCell(row, self, [itemi]));
+            cellcnt++;
           } else {
-            addCell();
-            if (itemi === self.delimiters.row) row += 1;
+            if (itemi === self.delimiters.row) {
+              if (row == 0) {
+                self.rowSize = cellcnt;
+              }
+              row += 1;
+            }
           }
         }
-        addCell();
-        self.rowSize = row + 1;
         self.autocorrect();
         return Parser.succeed(self);
       });
@@ -2217,8 +2235,8 @@ class Matrix extends Environment {
       rows[row][column] = cell;
 
       // Set up horizontal linkage
-      cell[R] = blocks[i + 1];
-      cell[L] = blocks[i - 1];
+      cell[R] = blocks[i + 1] ?? 0;
+      cell[L] = blocks[i - 1] ?? 0;
 
       // Set up vertical linkage
       if (rows[row - 1] && rows[row - 1][column]) {
@@ -2316,10 +2334,71 @@ class Matrix extends Environment {
       /*  removed for now - not sure what we need to do
         this.jQ.find('tr').eq(row).remove();
       */
+      /* 
+        hacky fix, since tr's aren't tethered to anything
+      */
+      let tofix = this.domFrag().oneElement().querySelectorAll('tr');
+      tofix.forEach(function(el) {
+        if (!el.querySelector('td')) {
+          el.remove();
+        }
+      });
     }
     if (isEmpty(myColumn) && myRow.length > 1) {
       remove(myColumn);
     }
+    this.finalizeTree();
+  }
+  addColumn(basecellindex: number) {
+    var rowSize = this.rowSize;
+    var colnum = basecellindex % rowSize;
+    var row = 0;
+    var self = this;
+    
+    while (colnum < this.blocks.length) {
+      let newcell = new MatrixCell(row, self);
+      newcell.setDOM(
+        domFrag(
+          h('td', { class: 'mq-empty' }, [])
+        )
+        .insDirOf(R, this.blocks[colnum].domFrag())
+        .oneElement()
+      );
+      NodeBase.linkElementByBlockNode(newcell.domFrag().oneElement(), newcell);
+      this.blocks.splice(colnum + 1, 0, newcell);
+      colnum += rowSize + 1;
+      row++;
+    }
+
+    this.rowSize++;
+    this.finalizeTree();
+  }
+  addRow(basecellindex: number) {
+    var rowSize = this.rowSize;
+    var rownum = Math.floor(basecellindex / rowSize) + 1;
+    var self = this;
+    var index = rownum * rowSize;
+
+    let newtr = domFrag(h('tr', {}, []));
+    newtr.insertAfter(this.blocks[index-1].domFrag().parent());
+    
+    for (let i = 0; i < rowSize; i++) {
+      let newcell = new MatrixCell(rownum, self);
+      newcell.setDOM(
+        domFrag(
+          h('td', { class: 'mq-empty' }, [])
+        )
+        .appendTo(newtr.oneElement())
+        .oneElement()
+      );
+      NodeBase.linkElementByBlockNode(newcell.domFrag().oneElement(), newcell);
+      this.blocks.splice(index, 0, newcell); 
+      index++;
+    }
+    for (let i = index; i < this.blocks.length; i++) {
+      this.blocks[i].row++;
+    }
+
     this.finalizeTree();
   }
   backspace(cell: MatrixCell, dir: Direction, cursor: Cursor, finalDeleteCallback: Function) {
@@ -2348,7 +2427,6 @@ class Matrix extends Environment {
   }
   remove() {
     this.blocks.forEach(function (cell) {
-
       cell.remove();
     });
     this.domFrag().remove();

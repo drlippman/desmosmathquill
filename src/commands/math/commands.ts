@@ -2172,6 +2172,7 @@ class Matrix extends Environment {
           }
         }
         self.autocorrect();
+        self.finalizeTree();
         return Parser.succeed(self);
       });
   }

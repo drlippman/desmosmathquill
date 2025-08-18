@@ -458,8 +458,37 @@ function getInterface(v: number): MathQuill.v3.API | MathQuill.v1.API {
         } else if (cmd === 'deleteRow') {
           cursor.parent.parent.deleteRow(blockindex, cursor);
         }
+        this.reflow();
+      } else if (cmd === 'new' && args.length === 3) {
+        let envtype = args[0];
+        let rows = args[1];
+        let cols = args[2];
+        if (EnvironmentCmds.hasOwnProperty(envtype as PropertyKey) &&
+          typeof rows === 'number' && typeof cols === 'number')
+        {
+          let latex = '\\begin{' + envtype + '}';
+          let row = '';
+          for (let i=0; i<cols-1; i++) { row += '&';}
+          for (let i=0; i<rows;i++) {
+            if (i>0) { 
+              latex += '\\\\';
+            }
+            latex += row;
+          }
+          latex += '\\end{' + envtype + '}';
+          ctrlr.writeLatex(latex);
+          this.reflow();
+          // place cursor in first cell
+          if (cursor[L] instanceof MQNode && cursor[L]) {
+            let cursorL = cursor[L];
+            if (cursorL.blocks) {
+              let firstcell = cursorL.blocks[0];
+              cursor.insAtLeftEnd(firstcell);
+            }
+          }
+        }
       }
-      this.reflow();
+      
       ctrlr.scrollHoriz();
       if (ctrlr.blurred) cursor.hide().parent.blur(cursor);
       return this;

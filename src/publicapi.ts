@@ -443,16 +443,20 @@ function getInterface(v: number): MathQuill.v3.API | MathQuill.v1.API {
       if (ctrlr.blurred) cursor.hide().parent.blur(cursor);
       return this;
     }
-    matrixCmd(cmd: string) {
+    matrixCmd(cmd: string, ...args: unknown[]) {
       var ctrlr = this.__controller.notify(undefined),
         cursor = ctrlr.cursor;
 
       if (cursor.parent instanceof MatrixCell && cursor.parent.parent instanceof Matrix) {
         var blockindex = cursor.parent.parent.blocks.indexOf(cursor.parent as MatrixCell);
         if (cmd === 'addColumn') {
-          cursor.parent.parent.addColumn(blockindex);
+          cursor.parent.parent.addColumn(blockindex, args[0]);
         } else if (cmd === 'addRow') {
-          cursor.parent.parent.addRow(blockindex);
+          cursor.parent.parent.addRow(blockindex, args[0]);
+        } else if (cmd === 'deleteColumn') {
+          cursor.parent.parent.deleteColumn(blockindex, cursor);
+        } else if (cmd === 'deleteRow') {
+          cursor.parent.parent.deleteRow(blockindex, cursor);
         }
       }
       this.reflow();

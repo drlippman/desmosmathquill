@@ -24,10 +24,10 @@ var SVG_SYMBOLS = {
       h('svg', { preserveAspectRatio: 'none', viewBox: '0 0 100 100' }, [
         h('path', { 
           'vector-effect': 'non-scaling-stroke',
-          'stroke-width': 1,
+          'stroke-width': 1.5,
           'stroke': 'black',
           'fill': 'none',
-          d: 'M80 1 L30 1 L30 99 L80 99' 
+          d: 'M70 1.5 L30 1.5 L30 98.5 L70 98.5' 
         })
       ])
   },
@@ -37,10 +37,10 @@ var SVG_SYMBOLS = {
       h('svg', { preserveAspectRatio: 'none', viewBox: '0 0 100 100' }, [
         h('path', { 
           'vector-effect': 'non-scaling-stroke', 
-          'stroke-width': 1,
+          'stroke-width': 1.5,
           'stroke': 'black',
           'fill': 'none',
-          d: 'M20 1 L70 1 L70 99 L20 99' 
+          d: 'M30 1.5 L70 1.5 L70 98.5 L30 98.5' 
         })
       ])
   },
@@ -2054,7 +2054,7 @@ class Matrix extends Environment {
       }
       row = cell.row;
       if (cell.isEmpty()) {
-        ctx.uncleanedLatex += '{}';
+        // ctx.uncleanedLatex += '{}';
       } else {
         cell.latexRecursive(ctx);
       }
@@ -2151,6 +2151,18 @@ class Matrix extends Environment {
             self.blocks.push(new MatrixCell(row, self, [itemi]));
             cellcnt++;
           } else {
+            if ((itemi === self.delimiters.column &&
+                (i == 0 || items[i-1] === self.delimiters.column || items[i-1] === self.delimiters.row)) ||
+                (itemi === self.delimiters.row && i > 0 &&
+                (items[i-1] === self.delimiters.column))
+            ) { // two in a row; empty cell
+              self.blocks.push(new MatrixCell(row, self));
+              cellcnt++;
+            }
+            if (itemi === self.delimiters.column && i === items.length - 1) {
+              self.blocks.push(new MatrixCell(row, self));
+              cellcnt++;
+            }
             if (itemi === self.delimiters.row) {
               if (row == 0) {
                 self.rowSize = cellcnt;
@@ -2349,11 +2361,78 @@ class Matrix extends Environment {
     }
     this.finalizeTree();
   }
-  addColumn(basecellindex: number) {
+  deleteColumn(basecellindex: number, cursor: Cursor) {
+    var rowSize = this.rowSize;
+    var colnum = basecellindex % rowSize;
+    var rownum = Math.floor(basecellindex / rowSize);
+
+    if (rowSize == 1) {
+      cursor.insRightOf(this);
+      this.remove();
+      return;
+    }
+
+    let curcol = colnum;
+    while (curcol < this.blocks.length) {
+      this.blocks[curcol].remove();
+      this.blocks.splice(curcol, 1);
+      curcol += rowSize - 1;
+    }
+
+    this.rowSize--;
+
+    if (colnum < this.rowSize) {
+      cursor.insAtRightEnd(this.blocks[rownum*this.rowSize + colnum]);
+    } else {
+      cursor.insAtRightEnd(this.blocks[rownum*this.rowSize + colnum - 1]);
+    }
+
+    this.finalizeTree();
+  }
+  deleteRow(basecellindex: number, cursor: Cursor) {
+    var rowSize = this.rowSize;
+    var rownum = Math.floor(basecellindex / rowSize);
+    var index = rownum * rowSize;
+
+    if (this.blocks.length == rowSize) {
+      cursor.insRightOf(this);
+      this.remove();
+      return;
+    }
+    
+    for (let i=0; i < rowSize; i++) {
+      this.blocks[index+i].remove();
+    }
+    this.blocks.splice(index, rowSize);
+
+    //hacky tr cleanup
+    let tofix = this.domFrag().oneElement().querySelectorAll('tr');
+    tofix.forEach(function(el) {
+      if (!el.querySelector('td')) {
+        el.remove();
+      }
+    });
+
+    for (let i=index; i < this.blocks.length; i++) {
+      this.blocks[i].row--;
+    }
+
+    if (basecellindex < this.blocks.length) {
+      cursor.insAtRightEnd(this.blocks[basecellindex]);
+    } else {
+      cursor.insAtRightEnd(this.blocks[basecellindex - rowSize]);
+    }
+
+    this.finalizeTree();
+  }
+  addColumn(basecellindex: number, dir?:any) {
     var rowSize = this.rowSize;
     var colnum = basecellindex % rowSize;
     var row = 0;
     var self = this;
+    if (dir !== 1 && dir !== -1) {
+      dir = 1;
+    }
     
     while (colnum < this.blocks.length) {
       let newcell = new MatrixCell(row, self);
@@ -2361,11 +2440,11 @@ class Matrix extends Environment {
         domFrag(
           h('td', { class: 'mq-empty' }, [])
         )
-        .insDirOf(R, this.blocks[colnum].domFrag())
+        .insDirOf(dir as Direction, this.blocks[colnum].domFrag())
         .oneElement()
       );
       NodeBase.linkElementByBlockNode(newcell.domFrag().oneElement(), newcell);
-      this.blocks.splice(colnum + 1, 0, newcell);
+      this.blocks.splice(colnum + (dir === 1?1:0), 0, newcell);
       colnum += rowSize + 1;
       row++;
     }
@@ -2373,14 +2452,21 @@ class Matrix extends Environment {
     this.rowSize++;
     this.finalizeTree();
   }
-  addRow(basecellindex: number) {
+  addRow(basecellindex: number, dir?:any) {
     var rowSize = this.rowSize;
-    var rownum = Math.floor(basecellindex / rowSize) + 1;
     var self = this;
+    if (dir !== 1 && dir !== -1) {
+      dir = 1;
+    }
+    var rownum = Math.floor(basecellindex / rowSize) + (dir === 1?1:0);
     var index = rownum * rowSize;
 
     let newtr = domFrag(h('tr', {}, []));
-    newtr.insertAfter(this.blocks[index-1].domFrag().parent());
+    if (dir === 1) {
+      newtr.insertAfter(this.blocks[index-1].domFrag().parent());
+    } else {
+      newtr.insertBefore(this.blocks[index].domFrag().parent());
+    }
     
     for (let i = 0; i < rowSize; i++) {
       let newcell = new MatrixCell(rownum, self);

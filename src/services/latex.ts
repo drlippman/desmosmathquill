@@ -287,6 +287,9 @@ class Controller_latex extends Controller_keystroke {
   private updateLatexMathEfficiently(latex: unknown, oldLatex: unknown) {
     // Note, benchmark/update.html is useful for measuring the
     // performance of renderLatexMathEfficiently
+
+    console.log("efficiently:" + latex + ' old: ' + oldLatex);
+
     var root = this.root;
     var oldClassification;
     var classification = this.classifyLatexForEfficientUpdate(latex);
@@ -459,7 +462,7 @@ class Controller_latex extends Controller_keystroke {
       .skip(eof)
       .or(all.result<false>(false))
       .parse(latex);
-
+console.log("fromscratch:" + latex);
     root.setEnds({ [L]: 0, [R]: 0 });
 
     if (block) {

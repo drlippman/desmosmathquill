@@ -1976,6 +1976,8 @@ class EmbedNode extends MQSymbol {
 }
 LatexCmds.embed = EmbedNode;
 
+var EnvironmentCmds: EnvironmentCmds = {};
+
 LatexCmds.begin = class extends MathCommand {
   parser() {
     var string = Parser.string;
@@ -1985,15 +1987,13 @@ LatexCmds.begin = class extends MathCommand {
       .skip(string('}'))
       .then(function (env) {
         return (
-          Environments[env]
-            ? Environments[env].parser()
+          EnvironmentCmds[env]
+            ? EnvironmentCmds[env]().parser()
             : Parser.fail('unknown environment type: ' + env)
         ).skip(string('\\end{' + env + '}'));
       });
   }
 };
-
-var Environments: Environments = {};
 
 class Environment extends MathCommand {
   environment = '';
@@ -2027,23 +2027,25 @@ class Matrix extends Environment {
     this.environment = environment;
   }
 
-  latex() {
+  latexRecursive(ctx: LatexContext) {
     var self = this;
-    var latex = '';
-    var row: number;
+    this.checkCursorContextOpen(ctx);
 
-    self.eachChild(function (cell) {
-      if (cell instanceof MatrixCell) {
-        if (typeof row !== 'undefined') {
-          latex +=
-            row !== cell.row ? self.delimiters.row : self.delimiters.column;
-        }
-        row = cell.row;
-        latex += cell.latex();
+    var row = -1;
+    var wrappers = this.wrappers();
+
+    ctx.uncleanedLatex += wrappers[0];
+
+    this.blocks.forEach(function (cell) {
+      if (row > -1) {
+        ctx.uncleanedLatex += (row !== cell.row) ? self.delimiters.row : self.delimiters.column;
       }
+      row = cell.row;
+      cell.latexRecursive(ctx);
     });
 
-    return this.wrappers().join(latex);
+    ctx.uncleanedLatex += wrappers[1];
+    this.checkCursorContextClose(ctx);
   }
   html() {
     var cells: MatrixCell[] = [],
@@ -2344,14 +2346,22 @@ class Matrix extends Environment {
       });
     }
   }
+  remove() {
+    this.blocks.forEach(function (cell) {
+
+      cell.remove();
+    });
+    this.domFrag().remove();
+    return this.disown();
+  }
 }
 
-Environments.matrix = new Matrix('', '', 'matrix');
-Environments.pmatrix = new Matrix('(', ')', 'pmatrix');
-Environments.bmatrix = new Matrix('[', ']', 'bmatrix');
-Environments.Bmatrix = new Matrix('{', '}', 'Bmatrix');
-Environments.vmatrix = new Matrix('|', '|', 'vmatrix');
-Environments.Vmatrix = new Matrix('&#8741;', '&#8741;', 'Vmatrix');
+EnvironmentCmds.matrix = () => new Matrix('', '', 'matrix');
+EnvironmentCmds.pmatrix = () => new Matrix('(', ')', 'pmatrix');
+EnvironmentCmds.bmatrix = () => new Matrix('[', ']', 'bmatrix');
+EnvironmentCmds.Bmatrix = () => new Matrix('{', '}', 'Bmatrix');
+EnvironmentCmds.vmatrix = () => new Matrix('|', '|', 'vmatrix');
+EnvironmentCmds.Vmatrix = () => new Matrix('&#8741;', '&#8741;', 'Vmatrix');
 
 class MatrixCell extends MathBlock {
   row;

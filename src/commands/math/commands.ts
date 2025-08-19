@@ -2140,17 +2140,27 @@ class Matrix extends Environment {
       .skip(optWhitespace)
       .then(function (items) {
         var row = 0;
+        var blocks: MathBlock[] = [];
+        var cellcnt = 0;
+
         self.blocks.forEach(function (cell) {
           cell.remove();
         });
 
-        var cellcnt = 0;
+        function addCell() {
+          if (blocks.length > 0) {
+            self.blocks.push(new MatrixCell(row, self, blocks));
+            cellcnt++;
+          }
+          blocks = [];
+        }
+
         for (var i = 0; i < items.length; i += 1) {
           let itemi = items[i];
           if (itemi instanceof MathBlock) {
-            self.blocks.push(new MatrixCell(row, self, [itemi]));
-            cellcnt++;
+            blocks.push(itemi);
           } else {
+            addCell();
             if ((itemi === self.delimiters.column &&
                 (i == 0 || items[i-1] === self.delimiters.column || items[i-1] === self.delimiters.row)) ||
                 (itemi === self.delimiters.row && i > 0 &&
@@ -2171,6 +2181,7 @@ class Matrix extends Environment {
             }
           }
         }
+        addCell();
         self.autocorrect();
         self.finalizeTree();
         return Parser.succeed(self);

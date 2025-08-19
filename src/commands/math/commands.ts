@@ -2069,9 +2069,9 @@ class Matrix extends Environment {
  
   
     var leftch = this.parentheses.left as keyof typeof SVG_SYMBOLS;
-    var leftBracketSymbol = SVG_SYMBOLS[leftch] || {width: '0', html: ''};
+    var leftBracketSymbol = SVG_SYMBOLS[leftch] || {width: '0'};
     var rightch = this.parentheses.right as keyof typeof SVG_SYMBOLS;
-    var rightBracketSymbol = SVG_SYMBOLS[rightch] || {width: '0', html: ''};
+    var rightBracketSymbol = SVG_SYMBOLS[rightch] || {width: '0'};
     this.domView = new DOMView(cells.length, (blocks) => {
         var rows: HTMLElement[] = [];
         var tds: HTMLElement[] = [];
@@ -2090,28 +2090,34 @@ class Matrix extends Environment {
           rows.push(h('tr', {}, tds));
         }
 
-        return h('span', { class: 'mq-matrix mq-non-leaf mq-bracket-container' }, [
-          h(
+        var matrixhtml:HTMLElement[] = [];
+        if (leftBracketSymbol.width !== '0') {
+          matrixhtml.push(h(
             'span',
             {
               style: 'width:' + leftBracketSymbol.width,
               class: 'mq-paren mq-bracket-l mq-scaled'
             },
             [leftBracketSymbol.html()]
-          ),
+          ));
+        }
+        matrixhtml.push(
           h('table', { 
             class: 'mq-non-left',
             style: 'margin-left:' + leftBracketSymbol.width + '; margin-right:' + rightBracketSymbol.width
-           }, rows),
-          h(
+           }, rows)
+        );
+        if (rightBracketSymbol.width !== '0') {
+          matrixhtml.push(h(
             'span',
             {
               style: 'width:' + rightBracketSymbol.width,
               class: 'mq-paren mq-bracket-r mq-scaled'
             },
             [rightBracketSymbol.html()]
-          )
-        ]);
+          ));
+        }
+        return h('span', { class: 'mq-matrix mq-non-leaf mq-bracket-container' }, matrixhtml);
       }
     );
 

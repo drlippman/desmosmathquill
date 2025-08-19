@@ -479,8 +479,8 @@ function getInterface(v: number): MathQuill.v3.API | MathQuill.v1.API {
           ctrlr.writeLatex(latex);
           this.reflow();
           // place cursor in first cell
-          if (cursor[L] instanceof MQNode && cursor[L]) {
-            let cursorL = cursor[L];
+          if (cursor[L] instanceof Matrix) {
+            let cursorL = cursor[L] as Matrix;
             if (cursorL.blocks) {
               let firstcell = cursorL.blocks[0];
               cursor.insAtLeftEnd(firstcell);

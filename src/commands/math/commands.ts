@@ -2201,7 +2201,7 @@ class Matrix extends Environment {
     this.relink();
   }
   // Enter the matrix at the top or bottom row if updown is configured.
-  getEntryPoint(dir: Direction, cursor: Cursor, updown?: 'up' | 'down') {
+  getEntryPoint(dir: Direction, updown?: 'up' | 'down') {
     if (updown === 'up') {
       if (dir === L) {
         return this.blocks[this.rowSize - 1];
@@ -2234,7 +2234,7 @@ class Matrix extends Environment {
     }
   }
   moveTowards(dir: Direction, cursor: Cursor, updown?: 'up' | 'down') {
-    var entryPoint = updown && this.getEntryPoint(dir, cursor, updown);
+    var entryPoint = updown && this.getEntryPoint(dir, updown);
     cursor.insAtDirEnd(-dir as Direction, entryPoint || this.getEnd(-dir as Direction));
   }
 
@@ -2572,7 +2572,10 @@ class MatrixCell extends MathBlock {
       && this.parent instanceof Matrix 
       && this.parent.atExitPoint(dir, cursor);
     // Step out of the matrix if we've moved past an edge column
-    if (!atExitPoint && this[dir]) cursor.insAtDirEnd(-dir as Direction, this[dir]);
-    else cursor.insDirOf(dir, this.parent);
+    if (!atExitPoint && this[dir] instanceof MQNode) {
+      cursor.insAtDirEnd(-dir as Direction, this[dir] as MQNode)
+    } else {
+      cursor.insDirOf(dir, this.parent)
+    };
   }
 }

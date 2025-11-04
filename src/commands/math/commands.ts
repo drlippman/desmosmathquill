@@ -522,8 +522,7 @@ class SupSub extends MathCommand {
           .queue('Baseline')
           .alert(cmd.mathspeak({ createdLeftOf: cursor }));
         return;
-      }
-      if (
+      } else if (
         cursor[L] &&
         !cursor[R] &&
         !cursor.selection &&
@@ -532,8 +531,16 @@ class SupSub extends MathCommand {
       ) {
         cursor.insRightOf(this.parent);
         cursor.controller.aria.queue('Baseline');
-      }
-      if (
+      } else if (cursor[L] && 
+          !cursor[R] && 
+          !cursor.selection && 
+          !nobreaksubsup &&
+          (this.parent[L] instanceof Bracket) && 
+          cursor.options.charsThatBreakOutOfSupSubOp.indexOf(ch) > -1
+      ) {
+        cursor.insRightOf(this.parent);
+        cursor.controller.aria.queue('Baseline');
+      } else if (
         cursor[L] && 
         !cursor[R] && 
         !cursor.selection && 

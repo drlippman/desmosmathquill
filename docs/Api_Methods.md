@@ -198,6 +198,10 @@ mq.latex('123');
 mq.selection(selection); // will restore the selection
 ```
 
+## getSelection()
+
+Returns just the selected math as latex
+
 # Editable MathField methods
 
 Editable math fields have all of the [above](#mathquill-base-methods) methods in addition to the ones listed here.

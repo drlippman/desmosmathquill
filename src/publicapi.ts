@@ -357,6 +357,16 @@ function getInterface(v: number): MathQuill.v3.API | MathQuill.v1.API {
 
       return this.__controller.exportLatexSelection().selection;
     }
+
+    // readd legacy API method 
+    getSelection(): string {
+      const selected = this.__controller.exportLatexSelection().selection;
+      if (selected) {
+        return selected.latex.substring(selected.startIndex, selected.endIndex);
+      }
+      return '';
+    }
+    
     html() {
       return this.__controller.root
         .domFrag()

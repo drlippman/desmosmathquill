@@ -20,6 +20,9 @@
 
       <p><span id="basic">\begin{bmatrix}123&amp;2&amp;3+x\\4&amp;5&amp;6\end{bmatrix}</span></p>
 
+      <p>Empty 2x2: <span id="basic2">\begin{bmatrix}&amp;\\&amp;\end{bmatrix}</span></p>
+      <p>Empty 2x1: <span id="basic3">\begin{bmatrix}\\\end{bmatrix}</span></p>
+
       <p><textarea id="basic-latex"></textarea></p>
 
       <p>
@@ -41,6 +44,9 @@
     <script type="text/javascript" src="../build/mathquill.js"></script>
     <script type="text/javascript">
       MQ = MathQuill.getInterface(MathQuill.getInterface.MAX);
+
+      MQ.MathField($('#basic2')[0]);
+      MQ.MathField($('#basic3')[0]);
 
       var latex = $('#basic-latex').bind('keydown keypress', function () {
         var prev = latex.val();

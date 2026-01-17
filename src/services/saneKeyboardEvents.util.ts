@@ -210,6 +210,8 @@ var saneKeyboardEvents = (function () {
       everyTick.trigger(e);
       if (e.target !== textarea) return;
       keydown = e;
+      document.getElementById('out')!.innerHTML += "keydown key: " + keydown.key + " which: " + keydown.which + "<br>";
+
       keypress = null;
 
       if (shouldBeSelected)
@@ -294,14 +296,17 @@ var saneKeyboardEvents = (function () {
       // Due to how this feature works, it's vital to completely ignore Ctrl-Shift-U no matter how the input event appears to Mathquill as clearing the textarea by mistake breaks the expected input flow.
       if (
         keydown &&
-        (keydown.key === 'Unidentified' ||
-          (!keydown.altKey &&
-            keydown.ctrlKey &&
-            !keydown.metaKey &&
-            keydown.shiftKey &&
-            (keydown.key === 'U' || keydown.key === 'Process')))
+        // DL: Changed here to revert issue 289 change
+          !keydown.altKey &&
+          keydown.ctrlKey &&
+          !keydown.metaKey &&
+          keydown.shiftKey &&
+          (keydown.key === 'U' ||
+            keydown.key === 'Unidentified' ||
+            keydown.key === 'Process')
       )
         return;
+        
       if (text.length === 1) {
         textarea.value = '';
         if (controller.options && controller.options.overrideTypedText) {

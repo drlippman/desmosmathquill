@@ -330,7 +330,12 @@ class Variable extends MQSymbol {
       // e.g. "y-2" is spoken as "ee minus 2" (as if the y is short).
       // Not an ideal solution, but surrounding non-numeric text blocks with quotation marks works.
       // This bug has been acknowledged by Apple.
-      return '"' + text + '"';
+      const isAppleDevice = /iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent);
+      if (isAppleDevice) {
+        return '"' + text + '"';
+      } else {
+        return text;
+      }
     }
   }
 }

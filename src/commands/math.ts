@@ -620,7 +620,8 @@ class MathBlock extends MathElement {
   keystroke(key: string, e: KeyboardEvent | undefined, ctrlr: Controller) {
     if (
       ctrlr.options.spaceBehavesLikeTab &&
-      (key === 'Spacebar' || key === 'Shift-Spacebar')
+      (key === 'Spacebar' || key === 'Shift-Spacebar') &&
+      ctrlr.cursor.parent !== ctrlr.root
     ) {
       e?.preventDefault();
       ctrlr.escapeDir(key === 'Shift-Spacebar' ? L : R, key, e);

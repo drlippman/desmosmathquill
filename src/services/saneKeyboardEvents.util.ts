@@ -210,8 +210,6 @@ var saneKeyboardEvents = (function () {
       everyTick.trigger(e);
       if (e.target !== textarea) return;
       keydown = e;
-      document.getElementById('out')!.innerHTML += "keydown key: " + keydown.key + " which: " + keydown.which + "<br>";
-
       keypress = null;
 
       if (shouldBeSelected)

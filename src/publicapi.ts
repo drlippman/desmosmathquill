@@ -101,6 +101,7 @@ class Options {
   charsThatBreakOutOfSupSub: string;
   charsThatBreakOutOfSupSubVar: string;
   charsThatBreakOutOfSupSubOp: string;
+  listCharReturnsTo?: [string, string];
   sumStartsWithNEquals?: boolean;
   autoSubscriptNumerals?: boolean;
   autoSubscriptBrackets?: boolean;

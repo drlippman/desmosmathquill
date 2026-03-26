@@ -956,6 +956,34 @@ class SymbolWithCustomClass extends MQSymbol {
   constructor(ch: string, customClass: string) {
     super(ch, h('span', { class: customClass }, [h.text(ch)]));
   }
+  createLeftOf(cursor: Cursor) {
+    const ctrlr = cursor.controller;
+    let parent = cursor.parent;
+    if (cursor.options.listCharReturnsTo &&
+        this.ctrlSeq === cursor.options.listCharReturnsTo[0]
+    ) {
+      const returnto = cursor.options.listCharReturnsTo[1];
+      while (parent !== ctrlr.root) {
+        if (returnto == 'baseline') {
+          if (parent.parent === ctrlr.root) {
+            cursor.insRightOf(parent);
+            break;
+          }
+        } else if (returnto == 'bracket') {
+          if (parent.parent?.parent?.parent && 
+              parent.parent.parent instanceof Bracket && 
+              parent.parent.parent.parent === ctrlr.root &&
+              !(cursor.parent instanceof Bracket)
+          ) {
+            cursor.insRightOf(parent);
+            break;
+          }
+        } 
+        parent = parent.parent;
+      }
+    }
+    super.createLeftOf(cursor);
+  }
 }
 LatexCmds[','] = () => new SymbolWithCustomClass(',', 'mq-comma');
 

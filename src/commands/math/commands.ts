@@ -2004,8 +2004,10 @@ class MathFieldNode extends MathCommand {
   latexRecursive(ctx: LatexContext) {
     this.checkCursorContextOpen(ctx);
 
+    ctx.uncleanedLatex += '{';
     this.getEnd(L).latexRecursive(ctx);
-
+    ctx.uncleanedLatex += '}';
+    
     this.checkCursorContextClose(ctx);
   }
   text() {

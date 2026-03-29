@@ -189,7 +189,13 @@ class Controller extends Controller_scrollHoriz {
   typedText(ch: string) {
     if (ch === '\n') return this.handle('enter');
     var cursor = this.notify(undefined).cursor;
-    cursor.parent.write(cursor, ch);
+    if (ch === '\t') {
+      cursor.controller.keystroke('Tab');
+    } else if (ch === ' ') {
+      cursor.controller.keystroke('Spacebar');
+    } else {
+      cursor.parent.write(cursor, ch);
+    }
     this.scrollHoriz();
   }
   cut() {

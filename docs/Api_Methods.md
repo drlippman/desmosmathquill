@@ -3,7 +3,7 @@
 To use the MathQuill API, first get an instance of the latest version of the interface:
 
 ```js
-var MQ = MathQuill.getInterface(3);
+var MQ = MathQuill.getInterface(MathQuill.getInterface.MAX);
 ```
 
 By default, MathQuill overwrites the global `MathQuill` variable when loaded. If you do not want this behavior, you can use `.noConflict()` ([similar to `jQuery.noConflict()`](http://api.jquery.com/jQuery.noConflict)):
@@ -308,6 +308,16 @@ if (!mathField.isUserSelecting()) {
 ## .config(new_config)
 
 Changes the [configuration](Config.md) of just this math field.
+
+## .matrixCmd(...)
+
+- `.matrixCmd('new', 'bmatrix', 3,2)` to add an empty 3x2 bracketed matrix
+- `.matrixCmd('insertRow')` inserts a row after the row that holds the cursor
+- `.matrixCmd('insertRow', -1)` inserts a row before the row that holds the cursor
+- `.matrixCmd('deleteRow')` deletes the row that holds the cursor
+- `.matrixCmd('insertColumn')` inserts a column after the column that holds the cursor
+- `.matrixCmd('insertColumn', -1)` inserts a column before the column that holds the cursor
+- `.matrixCmd('deleteColumn')` deletes the row that holds the cursor
 
 ## .dropEmbedded(pageX, pageY, options) **[ᴇxᴘᴇʀɪᴍᴇɴᴛᴀʟ](#note-on-experimental-features)**
 

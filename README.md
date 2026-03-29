@@ -16,7 +16,7 @@ This fork builds on Desmos's work, and adds:
 - Added charsThatBreakOutOfSupSubVar and charsThatBreakOutOfSupSubOp to allow control of which kind
   of expressions a symbol would break out of supsub for.
 - Added autoSubscriptBrackets option so typing (HO)3 would trigger autosubscript on the 3
-- Added autoParenOperator option for auto-inserting a paren when next char is typed after operator,
+- Added autoParenOperators option for auto-inserting a paren when next char is typed after operator,
   a fancier version of autoParenthesizedFunctions
 - Fix blur issue with .selection()
 - Add getSelection() API method
@@ -26,7 +26,7 @@ This fork builds on Desmos's work, and adds:
 - Add a dynamic layout fix for subscript, superscripts, and nthroot index to get it to position 
   more reasonably.
 
-Note the `/docs/` have _not_ been updated to reflect these changes.
+Note the `/docs/` may not be fully updated to reflect these changes.
 
 ## Open-Source License
 

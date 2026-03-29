@@ -66,6 +66,23 @@ Normally, to get out of a superscript or subscript, a user has to navigate out o
 
 If this option was set to `'+-'`, `+` and `-` would "break out" of the exponent. This doesn't apply to the first character in a superscript or subscript, so typing `x^-6` still results in `x^{-6}`. The downside to setting this option is that in order to type `x^{n+m}`, a workaround like typing `x^(n+m` and then deleting the `(` is required.
 
+## charsThatBreakOutOfSupSubVar
+
+Extends `charsThatBreakOutOfSupSub` with additional characters that will "break out" of superscripts and subscripts
+when the base is a variable.
+
+## charsThatBreakOutOfSupSubOp
+
+Extends `charsThatBreakOutOfSupSub` with additional characters that will "break out" of superscripts and subscripts
+when the base is an operator or brackets.
+
+## listCharReturnsTo
+
+When set, a list character like a comma will break out of whatever expression it is, to prevent typing commas inside
+expressions.  The format is `[symbol, type]`, where `type` can be `baseline` or `bracket`.  `baseline` will return
+to the expression baseline after the symbol is typed, while `bracket` will return to the inside of the topmost bracket
+expression, useful for when entering n-tuples.
+
 ## autoCommands
 
 `autoCommands` defines the set of commands automatically rendered by just typing the letters without typing a backslash first.
@@ -73,6 +90,9 @@ If this option was set to `'+-'`, `+` and `-` would "break out" of the exponent.
 This takes a string formatted as a space-delimited list of LaTeX commands. Each LaTeX command must be at least letters only with a minimum length of 2 characters.
 
 For example, with `autoCommands` set to `'pi theta'`, the word 'pi' automatically converts to the pi symbol and the word 'theta' automatically converts to the theta symbol.
+
+Start one with ^ so it will only match if a string starts with the characters.  If you used `^pi` then `pi` would get 
+converted by `dpi` would not convert the pi.
 
 ## autoOperatorNames
 
@@ -102,6 +122,22 @@ Just like [`autoCommands`](#autocommands) above, this takes a string formatted a
 
 For example, Desmos includes `sin` in this option, so typing `sin -1` doesn't look like `sin - 1`.
 
+## autoParenOperators
+
+Set equal to true to automatically insert grouping symbols (parens) after an operator when the next character is typed. This can help avoid ambiguity when operators don't use parens.
+
+## autoSubscriptNumerals
+
+Set true so that numbers typed after variables are used as a subscript.
+
+## autoSubscriptBrackets
+
+Set true so that numbers typed after brackets are used as a subscript.
+
+## quickPlusMinus 
+
+Set true so that typing `+-` will get converted to `\pm`.
+
 ## enableDigitGrouping and tripleDotsAreEllipsis
 
 If `enableDigitGrouping` is true, then sequences of digits (and `.`) will have a thin space every three digits. If a sequence of digits has exactly one `.`, then the spacing will only be in the whole number part (before the `.`). If a sequence of digits contains more than one `.`, or at least one space, then digit grouping is always disabled for that sequence.
@@ -111,6 +147,20 @@ If `tripleDotsAreEllipsis` is true, then `...` is treated as an ellipsis, with t
 1. Digit grouping re-starts after `...`, so `12345...56789` puts a thin space in both `12345` and `56789`
 2. A thin space surrounds `...`, so `123....456` looks more like `123 ... .456`.
 3. The `...` is not included in automatic fractions, so typing `12...34/` leads to `12...\frac{34}{ }` instead of `\frac{12...34}{ }`.
+
+## addCommand
+
+Use this to define new basic symbols.  See the example below for format, which 
+requires the input symbol, symbol type, latex output, and display html entity).
+
+```js
+addCommands: {
+  'uu': ['VanillaSymbol', '\\cup ', '&cup;'], 
+  'nn': ['VanillaSymbol', '\\cap ', '&cap;'],
+  'rightleftharpoons': ['BinaryOperator', '\\rightleftharpoons ', '&rlhar;']
+},
+
+```
 
 ## maxDepth
 

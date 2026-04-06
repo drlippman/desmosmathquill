@@ -118,9 +118,21 @@ class Controller_mouse extends Controller_latex {
     if (ctrlr.blurred) {
       //for static mathquills, we focus on mousemove
       //check if target is in innermathfield
-      if (this.editable ||
-        closest(e.target as HTMLElement | null, '.mq-editable-field')
-      ) textarea.focus();
+      if (this.editable) textarea.focus();
+      else {
+        const editableElement = closest(
+          e.target as HTMLElement | null,
+          '.mq-editable-field'
+        ) as HTMLElement | null;
+        if (editableElement) {
+          // if we clicked in editable field, we need to find the root block of the 
+          // clicked-on field and focus on the textarea of it, since the textarea
+          // found above might be the one for the static field
+          const rootOfEd = editableElement.getElementsByClassName('mq-root-block')[0] as HTMLElement;
+          const ctrlrRootOfEd = NodeBase.getNodeOfElement(rootOfEd) as ControllerRoot;
+          ctrlrRootOfEd.controller.getTextarea().focus();
+        }
+      }
       // focus call may bubble to clients, who may then write to
       // mathquill, triggering cancelSelectionOnEdit. If that happens, we
       // don't want to stop the cursor blink or bind listeners,

@@ -25,6 +25,7 @@ This fork builds on Desmos's work, and adds:
 - Add listCharReturnsTo option for having a comma break out back to baseline or top bracket
 - Add a dynamic layout fix for subscript, superscripts, and nthroot index to get it to position 
   more reasonably.
+- Restored editability by clicking on inner math fields
 
 Note the `/docs/` may not be fully updated to reflect these changes.
 

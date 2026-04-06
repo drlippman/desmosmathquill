@@ -36,9 +36,20 @@
     <script type="text/javascript" src="support/jquery-1.5.2.js"></script>
     <script type="text/javascript" src="../build/mathquill.js?v=4"></script>
     <script type="text/javascript">
+      
       MQ = MathQuill.getInterface(MathQuill.getInterface.MAX);
 
-      var mq = MQ.StaticMath($('#basic')[0]);
+      var mq = MQ.StaticMath($('#basic')[0], {
+        autoCommands: 'pi theta root sqrt ^oo degree',
+        autoParenOperators: true,
+        handlers: {
+          edit: function () {
+            if (mq) {
+              document.getElementById('basic-latex').value = mq.latex();
+            }
+          }
+        }
+      });
     </script>
     <div id="out"></div>
   </body>

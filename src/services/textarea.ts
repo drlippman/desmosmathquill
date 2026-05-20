@@ -187,11 +187,16 @@ class Controller extends Controller_scrollHoriz {
     this.removeTextareaEventListener('paste');
   }
   typedText(ch: string) {
+    var ctrlr = this;
     if (ch === '\n') return this.handle('enter');
     var cursor = this.notify(undefined).cursor;
     if (ch === '\t') {
       cursor.controller.keystroke('Tab');
-    } else if (ch === ' ') {
+    } else if (ch === ' ' && 
+      ctrlr.options.spaceBehavesLikeTab &&
+      ctrlr.cursor.parent !== ctrlr.root
+    ) {
+      // keystroke won't draw an actual space, so need limits
       cursor.controller.keystroke('Spacebar');
     } else {
       cursor.parent.write(cursor, ch);

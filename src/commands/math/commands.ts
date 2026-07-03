@@ -100,7 +100,35 @@ var SVG_SYMBOLS = {
       h('svg', { preserveAspectRatio: 'none', viewBox: '0 0 10 54' }, [
         h('path', { d: 'M3.2 0 L6.8 27 L3.2 54 L2.2 54 L5.8 27 L2.2 0' })
       ])
-  }
+  },
+  '&#x2045;': { // left invis
+    width: '.55em',
+    html: () =>
+      h('svg', { preserveAspectRatio: 'none', viewBox: '0 0 10 20' }, [
+        h('path', { 
+          d: 'M7,0 L3,0 L3,20 L7,20', 
+          'vector-effect': 'non-scaling-stroke',
+          'stroke-width': 1.4,
+          'stroke': 'black',
+          'fill': 'none',
+          'stroke-dasharray': '5 3'
+         })
+      ])
+  },
+  '&#x2046;': { // right invis
+    width: '.55em',
+    html: () =>
+      h('svg', { preserveAspectRatio: 'none', viewBox: '0 0 10 20' }, [
+        h('path', { d: 'M3,0 L7,0 L7,20 L3,20', 
+          'vector-effect': 'non-scaling-stroke',
+          'stroke-width': 1.4,
+          'stroke': 'black',
+          'fill': 'none',
+          'stroke-dasharray': '5 3'
+         })
+      ])
+  },
+
 };
 
 const ArrowText = '\u27A4';
@@ -236,7 +264,20 @@ LatexCmds.dot = () => {
       h('span', { class: 'mq-non-leaf' }, [
         h('span', { class: 'mq-dot-recurring-inner' }, [
           h('span', { class: 'mq-dot-recurring' }, [h.text(U_DOT_ABOVE)]),
-          h.block('span', { class: 'mq-empty-box' }, blocks[0])
+          h.block('span', { class: 'mq-diacritic-stem' }, blocks[0])
+        ])
+      ])
+    )
+  );
+};
+LatexCmds.ddot = () => {
+  return new MathCommand(
+    '\\ddot',
+    new DOMView(1, (blocks) =>
+      h('span', { class: 'mq-non-leaf' }, [
+        h('span', { class: 'mq-dot-recurring-inner' }, [
+          h('span', { class: 'mq-dot-recurring' }, [h.text(U_DDOT_ABOVE)]),
+          h.block('span', { class: 'mq-diacritic-stem' }, blocks[0])
         ])
       ])
     )
@@ -1766,7 +1807,8 @@ var OPP_BRACKS = {
   '\\rangle ': '\\langle ',
   '|': '|',
   '\\lVert ': '\\rVert ',
-  '\\rVert ': '\\lVert '
+  '\\rVert ': '\\lVert ',
+  '\\linvis': '\\rinvis'
 };
 
 var BRACKET_NAMES = {
@@ -1801,6 +1843,10 @@ LatexCmds.lVert = () =>
   new Bracket(L, '&#8741;', '&#8741;', '\\lVert ', '\\rVert ');
 LatexCmds.rVert = () =>
   new Bracket(R, '&#8741;', '&#8741;', '\\lVert ', '\\rVert ');
+LatexCmds.linvis = () =>
+  new Bracket(L, '&#x2045;', '&#x2046;', '\\linvis ', '\\rinvis ');
+LatexCmds.rinvis = () =>
+  new Bracket(R, '&#x2045;', '&#x2046;', '\\linvis ', '\\rinvis ');
 
 LatexCmds.left = class extends MathCommand {
   parser() {
@@ -1809,7 +1855,7 @@ LatexCmds.left = class extends MathCommand {
     var optWhitespace = Parser.optWhitespace;
 
     return optWhitespace
-      .then(regex(/^(?:[([|]|\\\{|\\langle(?![a-zA-Z])|\\lVert(?![a-zA-Z]))/))
+      .then(regex(/^(?:[([|]|\\\{|\\linvis(?![a-zA-Z])|\\langle(?![a-zA-Z])|\\lVert(?![a-zA-Z]))/))
       .then(function (ctrlSeq) {
         var open = ctrlSeq.replace(/^\\/, '');
         if (ctrlSeq == '\\langle') {
@@ -1820,11 +1866,15 @@ LatexCmds.left = class extends MathCommand {
           open = '&#8741;';
           ctrlSeq = ctrlSeq + ' ';
         }
+        if (ctrlSeq == '\\linvis') {
+          open = '&#x2045;';
+          ctrlSeq = ctrlSeq + ' ';
+        }
         return latexMathParser.then(function (block) {
           return string('\\right')
             .skip(optWhitespace)
             .then(
-              regex(/^(?:[\])|]|\\\}|\\rangle(?![a-zA-Z])|\\rVert(?![a-zA-Z]))/)
+              regex(/^(?:[\])|]|\\\}|\\rinvis(?![a-zA-Z])|\\rangle(?![a-zA-Z])|\\rVert(?![a-zA-Z]))/)
             )
             .map(function (end) {
               var close = end.replace(/^\\/, '');
@@ -1834,6 +1884,10 @@ LatexCmds.left = class extends MathCommand {
               }
               if (end == '\\rVert') {
                 close = '&#8741;';
+                end = end + ' ';
+              }
+              if (end == '\\rinvis') {
+                close = '&#x2046;';
                 end = end + ' ';
               }
               var cmd = new Bracket(0, open, close, ctrlSeq, end);

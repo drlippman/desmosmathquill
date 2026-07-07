@@ -351,6 +351,12 @@ var saneKeyboardEvents = (function () {
         textarea.focus();
       }
 
+      const clipboardEvent = e instanceof ClipboardEvent ? e : undefined;
+      if (clipboardEvent && controller.options?.overridePaste) {
+        const earlyReturn = controller.options.overridePaste(clipboardEvent);
+        if (earlyReturn) return;
+      }
+
       everyTick.listen(function pastedText() {
         if (!(textarea instanceof HTMLTextAreaElement)) return;
         var text = textarea.value;
@@ -361,6 +367,21 @@ var saneKeyboardEvents = (function () {
 
     function onInput(e: Event) {
       everyTick.trigger(e);
+    }
+
+    function updateClipboardData(e: ClipboardEvent | undefined) {
+      if (e?.clipboardData) {
+        const selection = controller.exportLatexSelection().selection;
+        if (selection.startIndex !== selection.endIndex) {
+          const text = selection.latex.slice(
+            selection.startIndex,
+            selection.endIndex
+          );
+          e.clipboardData.setData('text/plain', text);
+          e.clipboardData.setData('application/x-latex', text);
+          e.preventDefault();
+        }
+      }
     }
 
     if (controller.KIND_OF_MQ === 'StaticMath') {
@@ -399,15 +420,26 @@ var saneKeyboardEvents = (function () {
         keypress: onKeypress,
         keyup: onKeyup,
         focusout: onBlur,
-        cut: function () {
+        cut: function (evt: Event) {
+          const clipboardEvent =
+            evt instanceof ClipboardEvent ? evt : undefined;
+          if (clipboardEvent && controller.options?.overrideCut) {
+            const earlyReturn = controller.options.overrideCut(clipboardEvent);
+            if (earlyReturn) return;
+          }
+          updateClipboardData(clipboardEvent);
           everyTick.listenOnce(function () {
             controller.cut();
           });
         },
-        copy: function () {
-          everyTick.listenOnce(function () {
-            controller.copy();
-          });
+        copy: function (evt: Event) {
+          const clipboardEvent =
+            evt instanceof ClipboardEvent ? evt : undefined;
+          if (clipboardEvent && controller.options?.overrideCopy) {
+            const earlyReturn = controller.options.overrideCopy(clipboardEvent);
+            if (earlyReturn) return;
+          }
+          updateClipboardData(clipboardEvent);
         },
         paste: onPaste,
         input: onInput

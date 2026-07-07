@@ -92,6 +92,11 @@ class Options {
   constructor(public version: 1 | 2 | 3) {}
 
   ignoreNextMousedown: (_el: MouseEvent) => boolean;
+  askIfShouldIgnoreMousemove: (
+    evt: MouseEvent,
+    rootDOM: HTMLElement
+  ) => boolean;
+
   substituteTextarea: () => HTMLElement;
   /** Only used in interface versions 1 and 2. */
   substituteKeyboardEvents: SubstituteKeyboardEvents;
@@ -120,6 +125,9 @@ class Options {
   disableCopyPaste?: boolean;
   statelessClipboard?: boolean;
   logAriaAlerts?: boolean;
+  overridePaste?: (event?: ClipboardEvent) => boolean;
+  overrideCopy?: (event?: ClipboardEvent) => boolean;
+  overrideCut?: (event?: ClipboardEvent) => boolean;
   onPaste?: () => void;
   onCut?: () => void;
   overrideTypedText?: (text: string) => void;
@@ -368,6 +376,11 @@ function getInterface(v: number): MathQuill.v3.API | MathQuill.v1.API {
       return '';
     }
     
+
+    domNodeToSpan(dom: Element): ExportedLatexSelection | undefined {
+      return this.__controller.domNodeToSpan(dom);
+    }
+
     html() {
       return this.__controller.root
         .domFrag()

@@ -584,8 +584,10 @@ class MathBlock extends MathElement {
     var tempOp = '';
     var autoOps: CursorOptions['autoOperatorNames'] = {};
     if (this.controller) autoOps = this.controller.options.autoOperatorNames;
-    return (
-      this.foldChildren<string[]>([], function (speechArray, cmd) {
+
+    const speechArray = this.foldChildren<string[]>(
+      [],
+      function (speechArray, cmd) {
         if (cmd.isPartOfOperator) {
           tempOp += cmd.mathspeak();
         } else {
@@ -611,7 +613,20 @@ class MathBlock extends MathElement {
           speechArray.push(mathspeakText);
         }
         return speechArray;
-      })
+      }
+    );
+
+    if (tempOp !== '') {
+      if (autoOps._maxLength! > 0) {
+        var x = autoOps[tempOp.toLowerCase()];
+        if (typeof x === 'string') tempOp = x;
+      }
+      speechArray.push(tempOp + ' ');
+      tempOp = '';
+    }
+
+    return (
+      speechArray
         .join('')
         .replace(/ +(?= )/g, '')
         // For Apple devices in particular, split out digits after a decimal point so they aren't read aloud as whole words.
@@ -780,6 +795,9 @@ API.StaticMath = function (APIClasses: APIClasses) {
       this.config(opts as MathQuill.v3.Config);
       // `mathquillify` calls `createTextarea`
       super.mathquillify('mq-math-mode');
+      if (this.__options.enableDigitGrouping) {
+        this.__controller.root.domFrag().addClass('mq-show-grouping');
+      }
       this.__controller.setupStaticField();
       if (this.__options.mouseEvents) {
         this.__controller.addMouseEventListener();

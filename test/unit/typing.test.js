@@ -1,15 +1,25 @@
 suite('typing with auto-replaces', function () {
   const $ = window.test_only_jquery;
   var mq, mostRecentlyReportedLatex;
+
+  var normalConfig = {
+    handlers: {
+      edit: function () {
+        mostRecentlyReportedLatex = mq.latex();
+      }
+    }
+  };
+
+  const mathspeakConfig = {
+    ...normalConfig,
+    autoOperatorNames:
+      'sin|sine cos|cosine tan|tangent sinh|hyperbolic-sine log',
+    disableAutoSubstitutionInSubscripts: { except: 'log' }
+  };
+
   setup(function () {
     mostRecentlyReportedLatex = NaN; // != to everything
-    mq = MQ.MathField($('<span></span>').appendTo('#mock')[0], {
-      handlers: {
-        edit: function () {
-          mostRecentlyReportedLatex = mq.latex();
-        }
-      }
-    });
+    mq = MQ.MathField($('<span></span>').appendTo('#mock')[0], normalConfig);
   });
 
   function prayWellFormedPoint(pt) {
@@ -99,6 +109,15 @@ suite('typing with auto-replaces', function () {
     });
   });
 
+  suite('EquivalentQuote', function () {
+    test('different quote symbols', function () {
+      //these 4 are all different characters (!!)
+      mq.typedText("\u2018\u2019\u02BC'");
+      //these 4 are all the same character
+      assertLatex("''''");
+    });
+  });
+
   suite('LatexCommandInput', function () {
     test('basic', function () {
       mq.typedText('\\sqrt-x');
@@ -147,6 +166,34 @@ suite('typing with auto-replaces', function () {
   });
 
   suite('MathspeakShorthand', function () {
+    test('operatornames', function () {
+      mq.config(mathspeakConfig);
+
+      mq.latex('\\cos+2');
+      assertMathspeak('cosine plus 2');
+      mq.latex('\\cos');
+      assertMathspeak('cosine');
+      mq.latex('2+\\cos');
+      assertMathspeak('2 plus cosine');
+
+      // TODO - These require us passing the autoOps deeper into the tree. This conversion from "cos" to "cosine"
+      // actually only works within the RootBlock because it's the only one with access to the controller. That's
+      // where it can find the current set of autoOps. Otherwise the mathspeak code will just use an empty default
+      // list.
+      /*
+      mq.latex('\\left(\\cos\\right)');
+      assertMathspeak('left parenthesis cosine right parenthesis');
+
+      mq.latex('\\sqrt{\\cos}');
+      assertMathspeak('StartRoot, cosine, EndRoot');
+
+      mq.latex('log_{\\cos}');
+      assertMathspeak('log Subscript, cosine, Baseline');
+      */
+
+      mq.config(normalConfig);
+    });
+
     test('fractions', function () {
       // Testing singular numeric fractions from 1/2 to 1/112, and 1/100
       mq.latex('\\frac{1}{2}');
@@ -1541,6 +1588,34 @@ suite('typing with auto-replaces', function () {
         'greater than or equal to',
         'greater than'
       );
+    });
+
+    test('typing √ directly', function () {
+      mq.typedText('√');
+      assertLatex('\\sqrt{ }');
+      mq.typedText('x');
+      assertLatex('\\sqrt{x}');
+    });
+
+    test('typing ∑ directly', function () {
+      mq.typedText('∑');
+      assertLatex('\\sum_{ }^{ }');
+      mq.typedText('n');
+      assertLatex('\\sum_{n}^{ }');
+    });
+
+    test('typing ∏ directly', function () {
+      mq.typedText('∏');
+      assertLatex('\\prod_{ }^{ }');
+      mq.typedText('n');
+      assertLatex('\\prod_{n}^{ }');
+    });
+
+    test('typing ∫ directly', function () {
+      mq.typedText('∫');
+      assertLatex('\\int_{ }^{ }');
+      mq.typedText('n');
+      assertLatex('\\int_{n}^{ }');
     });
 
     test('typing and backspacing \\to', function () {

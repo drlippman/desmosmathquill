@@ -930,7 +930,13 @@ LatexCmds['.'] = () =>
     '.'
   );
 
-LatexCmds["'"] = LatexCmds.prime = bindVanillaSymbol("'", '&prime;', 'prime');
+LatexCmds['\u2018'] =
+  LatexCmds['\u2019'] =
+  LatexCmds['\u02BC'] =
+  LatexCmds["′"] =
+  LatexCmds["'"] =
+  LatexCmds.prime =
+    bindVanillaSymbol("'", '&prime;', 'prime');
 LatexCmds['″'] = LatexCmds.dprime = bindVanillaSymbol(
   '″',
   '&Prime;',
@@ -1395,7 +1401,8 @@ LatexCmds['±'] =
   LatexCmds.plusmn =
   LatexCmds.plusminus =
     () => new PlusMinus('\\pm ', h.entityText('&plusmn;'), 'plus-or-minus');
-LatexCmds.mp =
+LatexCmds['∓'] =
+  LatexCmds.mp =
   LatexCmds.mnplus =
   LatexCmds.minusplus =
     () => new PlusMinus('\\mp ', h.entityText('&#8723;'), 'minus-or-plus');

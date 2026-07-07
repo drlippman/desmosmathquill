@@ -37,6 +37,7 @@ declare namespace MathQuill {
       text(): string;
       selection(selection: ExportedLatexSelection): this;
       selection(): ExportedLatexSelection;
+      domNodeToSpan(dom: Element): ExportedLatexSelection | undefined;
       //chainable methods
       config(opts: Config): this;
       latex(latex: string): this;
@@ -125,6 +126,9 @@ declare namespace MathQuill {
       statelessClipboard?: boolean;
       onPaste?: () => void;
       onCut?: () => void;
+      overridePaste?: (event?: ClipboardEvent) => boolean;
+      overrideCopy?: (event?: ClipboardEvent) => boolean;
+      overrideCut?: (event?: ClipboardEvent) => boolean;
       overrideTypedText?: (text: string) => void;
       overrideKeystroke?: (key: string, event: KeyboardEvent) => void;
       autoOperatorNames?: string;
@@ -140,6 +144,10 @@ declare namespace MathQuill {
       quickPlusMinus?: boolean;
       addCommands?: {[key: string]: [string, string, string]};
       handlers?: HandlerOptions<BaseMathQuill<$>>;
+      askIfShouldIgnoreMousemove?: (
+        evt: MouseEvent,
+        rootElt: HTMLElement
+      ) => boolean;
     }
 
     interface Handler<MQClass> {
